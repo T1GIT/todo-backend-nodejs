@@ -7,6 +7,7 @@ require('dotenv').config({
 const {HOST, PORT, DB_NAME, DB_USERNAME, DB_PASSWORD, ACCEPT_ORIGIN } = process.env
 
 module.exports = {
+    NODE_ENV,
     HOST, PORT,
     DB_NAME, DB_USERNAME, DB_PASSWORD,
     ACCEPT_ORIGIN

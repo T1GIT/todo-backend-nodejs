@@ -1,11 +1,12 @@
 {
-  "name": "jwt-express",
+  "name": "todo-backend-nodejs",
   "version": "1.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "app.js",
   "scripts": {
     "production": "set NODE_ENV=production && node app\"",
-    "development": "nodemon app"
+    "development": "nodemon app",
+    "test": "jest --runInBand ./test"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -19,7 +20,12 @@
     "validator": "^13.6.0"
   },
   "devDependencies": {
+    "jest": "^27.0.6",
+    "mongodb-memory-server": "^7.3.4",
     "nodemon": "^2.0.12"
+  },
+  "jest":{
+    "testEnvironment": "node"
   },
   "keywords": [],
   "author": "",

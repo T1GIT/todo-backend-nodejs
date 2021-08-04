@@ -1,6 +1,6 @@
-const corsConfig = require('./corsConfig')
+const corsConfig = require('./cors-config')
 const authorization = require('./authorization')
-const errorHandler = require('./errorHandler')
+const errorHandler = require('./error-handler')
 
 
 module.exports = { corsConfig, authorization, errorHandler }
