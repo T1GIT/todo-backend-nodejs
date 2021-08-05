@@ -1,5 +1,4 @@
 const User = require('../models/User')
-const bcrypt = require('bcrypt')
 const { HttpError } = require("../../middleware/error-handler");
 const { nanoid } = require('nanoid')
 const config = require('../config')
@@ -40,10 +39,7 @@ async function register(user, fingerprint) {
     const { email, psw, name, surname, patronymic, birthdate } = user
     if (await User.exists({ email }))
         throw new HttpError(409, 'Email already exists')
-    user = await User.create({
-        psw: bcrypt.hashSync(psw, keyLength.salt),
-        email, name, surname, patronymic, birthdate,
-    })
+    user = await User.create({ email, psw, name, surname, patronymic, birthdate, })
     const refresh = await addSession(user, fingerprint)
     return { user, refresh }
 }
@@ -53,7 +49,7 @@ async function login(user, fingerprint) {
     if (!await User.exists({ email }))
         throw new HttpError(404, 'Email not found ')
     user = await User.findOne({ email }).select('+psw')
-    if (!bcrypt.compareSync(psw, user.psw))
+    if (!user.isValidPsw(psw))
         throw new HttpError(401, 'Invalid password')
     await clearSessions(user, fingerprint)
     const refresh = await addSession(user, fingerprint)

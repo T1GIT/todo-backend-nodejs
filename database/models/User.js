@@ -1,6 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator').default
 const SessionSchema = require('../schemas/Session')
+const bcrypt = require("bcrypt");
+const { keyLength } = require("../../security/config");
 
 
 const schema = new mongoose.Schema({
@@ -17,7 +19,8 @@ const schema = new mongoose.Schema({
     psw: {
         type: String,
         required: true,
-        select: false
+        select: false,
+        validate: (psw) => validator.matches(psw, '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$')
     },
     name: {
         type: String,
@@ -54,6 +57,14 @@ const schema = new mongoose.Schema({
             ref: 'Category'
         }
     ]
+})
+
+schema.pre('save', async function () {
+    this.psw = bcrypt.hashSync(this.psw, keyLength.salt)
+})
+
+schema.method('isValidPsw', async function (psw) {
+    return bcrypt.compareSync(psw, this.psw)
 })
 
 

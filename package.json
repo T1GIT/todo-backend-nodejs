@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "production": "set NODE_ENV=production && node app\"",
-    "development": "nodemon app",
-    "test": "jest --runInBand ./test"
+    "production": "set NODE_ENV=production && node app",
+    "development": "set NODE_ENV=development && nodemon app",
+    "test": "set NODE_ENV=test && jest"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -23,9 +23,6 @@
     "jest": "^27.0.6",
     "mongodb-memory-server": "^7.3.4",
     "nodemon": "^2.0.12"
-  },
-  "jest":{
-    "testEnvironment": "node"
   },
   "keywords": [],
   "author": "",

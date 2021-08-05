@@ -3,6 +3,7 @@ const manager = require('./database/manager/manager-in-memory')
 const { bodyParser, cookieParser, corsConfig, errorHandler } = require('./middleware')
 const postsRoute = require('./api/routes/users')
 const env = require('./environment')
+const validator = require('validator').default
 
 const app = express()
 
@@ -21,17 +22,8 @@ async function start() {
         await app.listen(env.PORT, env.HOST)
         console.log(`Server has been started on address http://${ env.HOST }:${ env.PORT }`)
 
-        const user = {
-            email: "jseifjeij@mail.com",
-            psw: 'fiejfihsfhsefih'
-        }
-        const fp = "jfiejifiejf"
 
-        const User = require('./database/models/User')
-        const authorizationService = require('./database/services/authorization')
-
-        await authorizationService.register(user, fp)
-        await authorizationService.login(user, fp)
+        console.log(validator.matches('bad-pswgrgj99', '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'));
 
     } catch (e) {
         console.error(e)
