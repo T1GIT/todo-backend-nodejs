@@ -1,4 +1,4 @@
-module.exports = async (err, req, res) => {
+const errorHandler = async (err, req, res) => {
     switch (true) {
         case typeof err === 'string':
             // custom application error
@@ -15,3 +15,14 @@ module.exports = async (err, req, res) => {
             return res.status(500).json({ message: err.message });
     }
 }
+
+
+class HttpError extends Error {
+    constructor(code, message) {
+        super(message)
+        this.code = code
+    }
+}
+
+
+module.exports = { HttpError, errorHandler }

@@ -1,6 +1,0 @@
-{
-  "keyLength": {
-    "jwtKey": 21,
-    "refresh": 30
-  }
-}

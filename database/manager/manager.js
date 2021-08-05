@@ -1,5 +1,5 @@
 const mongoose = require('mongoose')
-const env = require('../environment')
+const env = require('../../environment')
 
 
 const connect = async () => {
@@ -16,7 +16,7 @@ const connect = async () => {
     await mongoose.connect(uri, options)
 }
 
-const close = async () => await mongoose.connection.close()
+const disconnect = async () => await mongoose.connection.close()
 
 const clear = async () => {
     const collections = mongoose.connection.collections
@@ -28,4 +28,4 @@ const clear = async () => {
 }
 
 
-module.exports = { connect, close, clear }
+module.exports = { connect, disconnect, clear }

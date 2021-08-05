@@ -3,6 +3,12 @@ const User = require('../../database/models/User')
 
 const router = express.Router()
 
+router.get('/a', async (req, res) => {
+    console.log(req.cookies)
+    res.cookie("a", "b")
+    res.send("fije")
+})
+
 router.post('/users', async (req, res) => {
     try {
         const user = new User(req.body)

@@ -20,7 +20,7 @@ const connect = async () => {
     await mongoose.connect(uri, options)
 }
 
-const close = async () => {
+const disconnect = async () => {
     await mongoose.connection.dropDatabase()
     await mongoose.connection.close()
     await memoryServer.stop()
@@ -36,4 +36,4 @@ const clear = async () => {
 }
 
 
-module.exports = { connect, close, clear }
+module.exports = { connect, disconnect, clear }
