@@ -4,9 +4,7 @@ const { nanoid } = require('nanoid')
 const { keyLength, expirePeriod } = require('../config')
 
 
-const options = {
-
-}
+const expiresIn = expirePeriod.jwt * 60
 
 let jwtKey = nanoid(keyLength.jwt)
 
@@ -18,14 +16,14 @@ async function create(user) {
     return await jsonwebtoken.sign(
         { payload: user },
         jwtKey,
-        { expiresIn: expirePeriod.jwt })
+        { expiresIn: expiresIn })
 }
 
 async function parse(jwt) {
     return jsonwebtoken.verify(
         jwt,
         jwtKey,
-        { maxAge: expirePeriod.jwt }
+        { maxAge: expiresIn }
     );
 }
 

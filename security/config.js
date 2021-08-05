@@ -2,10 +2,11 @@ module.exports = {
     keyLength: {
         jwt: 40,
         refresh: 30,
-        cookie: 40
+        cookie: 40,
+        salt: 10
     },
     expirePeriod: {
-        jwt: 60 * 10,
-        refresh: 60 * 60 * 24 * 60
+        jwt: 10, // minutes
+        refresh: 60 // days
     }
 }
