@@ -30,8 +30,8 @@ async function parse(jwt) {
 }
 
 async function extract(req) {
-    return parse(req.header('authorization').replace('Bearer ', ''))
+    return req.header('authorization').replace('Bearer ', '')
 }
 
 
-module.exports = { updateKey, create, extract }
+module.exports = { updateKey, create, extract, parse }

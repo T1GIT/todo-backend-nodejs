@@ -1,19 +1,19 @@
 const errorHandler = async (err, req, res) => {
-    switch (true) {
-        case typeof err === 'string':
-            // custom application error
-            const is404 = err.toLowerCase().endsWith('not found');
-            const statusCode = is404 ? 404 : 400;
-            return res.status(statusCode).json({ message: err });
-        case err.name === 'ValidationError':
-            // mongoose validation error
-            return res.status(400).json({ message: err.message });
-        case err.name === 'UnauthorizedError':
-            // jwt authentication error
-            return res.status(401).json({ message: 'Unauthorized' });
+    let code
+    switch (err.name) {
+        case 'ValidationError':
+            code = 422
+            break
+        case 'UnauthorizedError':
+            code = 401
+            break
+        case 'HttpError':
+            code = err.code
+            break
         default:
-            return res.status(500).json({ message: err.message });
+            code = 500
     }
+    return res.status(code).send({ message: err.message })
 }
 
 
