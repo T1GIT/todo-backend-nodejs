@@ -1,98 +1,51 @@
 const User = require('../model/User.model')
-const { HttpError } = require("../../middleware/plugins/error-handler");
 const { nanoid } = require('nanoid')
-const config = require('../config')
-const { keyLength, expirePeriod } = require('../../middleware/security/config')
+const SessionService = require('./session.service')
+const { NoActiveSessions, WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error");
+const { KEY_LENGTH, EXPIRE_PERIOD } = require('../../middleware/security/config')
 
-
-async function addSession(user, fingerprint) {
-    const refresh = nanoid(keyLength.refresh)
-    const date = new Date()
-    const session = {
-        expires: date.setDate(date.getDate() + expirePeriod.refresh),
-        refresh, fingerprint
-    }
-    await User.updateOne(
-        user,
-        { $push: { sessions: session } }
-    )
-    return refresh
-}
-
-const sessionCleaner = {
-    fingerprint: async (user, fingerprint) => await User.updateOne(
-        user,
-        { $pull: { sessions: { fingerprint } } }
-    ),
-    overflow: async (user) => {
-        const sessions = (await User.findById(user).select('+sessions')).sessions
-        if (sessions.length > config.maxSessions) {
-            await User.updateOne(
-                user,
-                { $set: { sessions: sessions.slice(sessions.length - config.maxSessions) } }
-            )
-        }
-    },
-    outdated: async () => {
-        const date = new Date()
-        await User.updateOne(
-            { 'sessions.expires': { $lt: date } },
-            { $pull: { sessions: { expires: { $lt: date } } } }
-        );
-    },
-    abort: async (refresh, fingerprint) =>
-        await User.updateMany({
-                $or: [
-                    { 'sessions.refresh': refresh },
-                    { 'sessions.fingerprint': fingerprint }
-                ]
-            },
-            { $pull: { sessions: { $or: [{ refresh }, { fingerprint }] } } }
-        )
-}
 
 async function register(user, fingerprint) {
     const { email, psw, name, surname, patronymic, birthdate } = user
     if (await User.exists({ email }))
-        throw new HttpError(409, 'Email already exists')
+        throw new EmailAlreadyExists(email)
     user = await User.create({ email, psw, name, surname, patronymic, birthdate, })
-    const refresh = await addSession(user, fingerprint)
+    const refresh = await SessionService.create(user, fingerprint)
     return { user, refresh }
 }
 
 async function login(user, fingerprint) {
     const { email, psw } = user
     if (!await User.exists({ email }))
-        throw new HttpError(404, 'Email not found ')
+        throw new EmailNotExists(email)
     user = await User.findOne({ email }).select('+psw')
-    if (!user.isValidPsw(psw))
-        throw new HttpError(401, 'Invalid password')
-    await sessionCleaner.fingerprint(user, fingerprint)
-    await sessionCleaner.overflow(user)
-    const refresh = await addSession(user, fingerprint)
+    if (!user.checkPsw(psw))
+        throw new WrongPsw(psw)
+    await SessionService.clean.fingerprint(user, fingerprint)
+    await SessionService.clean.overflow(user)
+    const refresh = await SessionService.create(user, fingerprint)
     return { user, refresh }
 }
 
 async function refresh(refresh, fingerprint) {
     const date = new Date()
-    const session = await User.findOne({
+    if (! await User.exists({
         'sessions.expires': { $gt: date },
         'sessions.refresh': refresh,
         'sessions.fingerprint': fingerprint
-    })
-    if (!session) {
-        await sessionCleaner.outdated()
-        await sessionCleaner.abort(refresh, fingerprint)
-        throw new HttpError(401, "Not have active sessions")
+    })) {
+        await SessionService.clean.outdated()
+        await SessionService.clean.abort(refresh, fingerprint)
+        throw new NoActiveSessions()
     }
-    const newRefresh = nanoid(keyLength.refresh)
+    const newRefresh = nanoid(KEY_LENGTH.REFRESH)
     await User.updateOne(
         { 'sessions.refresh': refresh },
         {
             $set: {
                 sessions: {
                     refresh: newRefresh,
-                    expires: date.setDate(date.getDate() + expirePeriod.refresh)
+                    expires: date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH)
                 }
             }
         }

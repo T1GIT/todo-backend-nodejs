@@ -1,35 +1,47 @@
 const jsonwebtoken = require('jsonwebtoken')
 const env = require('../../../environment')
 const { nanoid } = require('nanoid')
-const { keyLength, expirePeriod } = require('../config')
+const { KEY_LENGTH, EXPIRE_PERIOD } = require('../config')
 
 
-const expiresIn = expirePeriod.jwt * 60
+class JwtProvider {
+    secret
 
-let jwtKey = nanoid(keyLength.jwt)
+    constructor() {
+        this.updateKey()
+    }
 
-function updateKey() {
-    jwtKey = nanoid(keyLength.jwt)
+    updateKey() {
+        this.secret = nanoid(KEY_LENGTH.JWT)
+    }
+
+    async create(user) {
+        try {
+            return await jsonwebtoken.sign(
+                { payload: user },
+                this.secret,
+                { expiresIn: EXPIRE_PERIOD.JWT })
+        } catch (e) {
+            throw new JwtError(`(${e.name}) ${e.message}`)
+        }
+    }
+
+    parse(jwt) {
+
+        try {
+            return jsonwebtoken.verify(
+                jwt,
+                this.secret,
+                { maxAge: EXPIRE_PERIOD.JWT }
+            );
+        } catch (e) {
+            throw new JwtError(`(${e.name}) ${e.message}`)
+        }
+    }
+
+    extract(req) {
+        return req.header('authorization').replace('Bearer ', '')
+    }
 }
 
-async function create(user) {
-    return await jsonwebtoken.sign(
-        { payload: user },
-        jwtKey,
-        { expiresIn: expiresIn })
-}
-
-async function parse(jwt) {
-    return jsonwebtoken.verify(
-        jwt,
-        jwtKey,
-        { maxAge: expiresIn }
-    );
-}
-
-async function extract(req) {
-    return req.header('authorization').replace('Bearer ', '')
-}
-
-
-module.exports = { updateKey, create, extract, parse }
+module.exports = new JwtProvider()
