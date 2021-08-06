@@ -34,7 +34,7 @@ describe("Authorization service", () => {
 
         afterEach(manager.clear)
 
-        describe("registers normal data", () => {
+        describe("can be done with", () => {
             describe("short info", () => {
 
                 afterEach(manager.clear)
@@ -102,7 +102,7 @@ describe("Authorization service", () => {
             })
         })
 
-        describe("doesn't register", () => {
+        describe("can not be done", () => {
             describe("with incorrect", () => {
                 it("email", async () => {
                     await expect(async () => await authorizationService.register({
@@ -132,22 +132,19 @@ describe("Authorization service", () => {
 
         afterEach(manager.clear)
 
-        describe("with normal data", () => {
+        describe("can be done", () => {
 
             beforeAll(async () => await authorizationService.register({ ...profile.right }, fingerprint))
 
-            it("doesn't throw", async () => await expect(
+            it("without throwing", async () => await expect(
                 authorizationService.login({ ...profile.right }, fingerprint))
                 .resolves.not.toThrow())
 
-            describe("returns valid", () => {
+            describe("and returns valid", () => {
 
                 let res
 
-                beforeAll(async () => {
-                    await authorizationService.register({ ...profile.right }, fingerprint)
-                    res = await authorizationService.login({ ...profile.right }, fingerprint);
-                })
+                beforeAll(async () => res = await authorizationService.register({ ...profile.right }, fingerprint))
 
                 it("user", () => {
                     let { user } = res
@@ -165,11 +162,11 @@ describe("Authorization service", () => {
             })
         })
 
-        describe("doesn't with", () => {
+        describe("can not be done", () => {
 
             beforeAll(async () => await authorizationService.register({ ...profile.right }, fingerprint))
 
-            describe("invalid", () => {
+            describe("if is invalid", () => {
                 it("email", async () => {
                     await expect(async () => await authorizationService.login({
                         email: profile.another.email,
@@ -186,7 +183,7 @@ describe("Authorization service", () => {
                 })
             })
 
-            describe("incorrect", () => {
+            describe("if is incorrect", () => {
                 it("email", async () => {
                     await expect(async () => await authorizationService.login({
                         email: profile.wrong.email,
@@ -210,7 +207,8 @@ describe("Authorization service", () => {
         let res
 
         beforeAll(async () => res = await authorizationService.register({ ...profile.right }, fingerprint))
-        afterEach(async () => res = await authorizationService.login({ ...profile.right }, fingerprint))
+        beforeEach(async () => res = await authorizationService.login({ ...profile.right }, fingerprint))
+        afterAll(manager.clear)
 
         describe("does", () => {
 
@@ -235,6 +233,25 @@ describe("Authorization service", () => {
             it("fingerprint", async () =>
                 await expect(authorizationService.refresh(res.refresh, '!' + fingerprint))
                     .rejects.toThrow())
+        })
+    })
+
+    describe("logout", () => {
+        describe("can be done without throwing after", () => {
+
+            let res
+
+            beforeAll(async () => res = await authorizationService.register({ ...profile.right }, fingerprint))
+            afterAll(manager.clear)
+
+            it("register", async () => await expect(authorizationService.logout(res.refresh))
+                .resolves.not.toThrow())
+
+            it("login", async () => {
+                res = await authorizationService.login({ ...profile.right }, fingerprint)
+                await expect(authorizationService.logout(res.refresh))
+                    .resolves.not.toThrow()
+            })
         })
     })
 })
