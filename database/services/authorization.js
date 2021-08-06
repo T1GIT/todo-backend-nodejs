@@ -19,20 +19,36 @@ async function addSession(user, fingerprint) {
     return refresh
 }
 
-async function clearSessions(user, fingerprint) {
-    // Deletes sessions with the same fingerprint
-    await User.updateOne(
+const sessionCleaner = {
+    fingerprint: async (user, fingerprint) => await User.updateOne(
         user,
         { $pull: { sessions: { fingerprint } } }
-    )
-    // Deletes old sessions if total amount more then maxSessions
-    const sessions = (await User.findById(user).select('+sessions')).sessions
-    if (sessions.length > config.maxSessions) {
+    ),
+    overflow: async (user) => {
+        const sessions = (await User.findById(user).select('+sessions')).sessions
+        if (sessions.length > config.maxSessions) {
+            await User.updateOne(
+                user,
+                { $set: { sessions: sessions.slice(sessions.length - config.maxSessions) } }
+            )
+        }
+    },
+    outdated: async () => {
+        const date = new Date()
         await User.updateOne(
-            user,
-            { $set: { sessions: sessions.slice(sessions.length - config.maxSessions) } }
+            { 'sessions.expires': { $lt: date } },
+            { $pull: { sessions: { expires: { $lt: date } } } }
+        );
+    },
+    abort: async (refresh, fingerprint) =>
+        await User.updateMany({
+                $or: [
+                    { 'sessions.refresh': refresh },
+                    { 'sessions.fingerprint': fingerprint }
+                ]
+            },
+            { $pull: { sessions: { $or: [{ refresh }, { fingerprint }] } } }
         )
-    }
 }
 
 async function register(user, fingerprint) {
@@ -51,14 +67,25 @@ async function login(user, fingerprint) {
     user = await User.findOne({ email }).select('+psw')
     if (!user.isValidPsw(psw))
         throw new HttpError(401, 'Invalid password')
-    await clearSessions(user, fingerprint)
+    await sessionCleaner.fingerprint(user, fingerprint)
+    await sessionCleaner.overflow(user)
     const refresh = await addSession(user, fingerprint)
     return { user, refresh }
 }
 
-async function refresh(refresh) {
-    const newRefresh = nanoid(keyLength.refresh)
+async function refresh(refresh, fingerprint) {
     const date = new Date()
+    const session = await User.findOne({
+        'sessions.expires': { $gt: date },
+        'sessions.refresh': refresh,
+        'sessions.fingerprint': fingerprint
+    })
+    if (!session) {
+        await sessionCleaner.outdated()
+        await sessionCleaner.abort(refresh, fingerprint)
+        throw new HttpError(401, "Not have active sessions")
+    }
+    const newRefresh = nanoid(keyLength.refresh)
     await User.updateOne(
         { 'sessions.refresh': refresh },
         {

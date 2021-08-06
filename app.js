@@ -23,7 +23,19 @@ async function start() {
         console.log(`Server has been started on address http://${ env.HOST }:${ env.PORT }`)
 
 
-        console.log(validator.matches('bad-pswgrgj99', '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'));
+
+        const User = require('./database/models/User')
+        await User.create({
+            email: 'jfiejfh@gmail.com',
+            psw: 'fiejhe83hff',
+            sessions: [{
+                refresh: 'refresh',
+                fingerprint: 'fingerprint',
+                expires: new Date()
+            }]
+        })
+
+
 
     } catch (e) {
         console.error(e)
