@@ -17,10 +17,10 @@ function validateFields(email, psw) {
 }
 
 class UserService {
-    async add(user) {
+    async create(user) {
         const { email, psw, name, surname, patronymic, birthdate } = user
         validateFields(email, psw)
-        if (await this.existsByEmail(email))
+        if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
         return await User.create({
             psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT),
@@ -30,16 +30,12 @@ class UserService {
     async check(user) {
         const { email, psw } = user
         validateFields(email, psw)
-        if (!await this.existsByEmail(email))
+        if (!await User.exists({ email }))
             throw new EmailNotExists(email)
         user = await User.findOne({ email }).select('+psw')
         if (!bcrypt.compareSync(psw, user.psw))
             throw new WrongPsw(psw)
         return user
-    }
-
-    async existsByEmail(email) {
-        return await User.exists({ email })
     }
 }
 

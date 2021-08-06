@@ -2,7 +2,7 @@ const { EXPIRE_PERIOD } = require("../../middleware/security/config");
 const { KEY_LENGTH } = require("../../middleware/security/config");
 const User = require("../model/User.model")
 const { nanoid } = require("nanoid");
-const config = require("../../middleware/data/config")
+const config = require("../config")
 
 
 class SessionCleaner {
@@ -53,6 +53,38 @@ class SessionService {
             { $push: { sessions: session } }
         )
         return refresh
+    }
+
+    async update(refresh) {
+        const newRefresh = nanoid(KEY_LENGTH.REFRESH)
+        const date = new Date()
+        await User.updateOne(
+            { 'sessions.refresh': refresh },
+            {
+                $set: {
+                    sessions: {
+                        refresh: newRefresh,
+                        expires: date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH)
+                    }
+                }
+            }
+        )
+        return newRefresh
+    }
+
+    async exists(refresh, fingerprint) {
+        return await User.exists({
+            'sessions.expires': { $gt: new Date() },
+            'sessions.refresh': refresh,
+            'sessions.fingerprint': fingerprint
+        })
+    }
+
+    async remove(refresh) {
+        await User.updateOne(
+            { 'sessions.refresh': refresh },
+            { $pull: { sessions: { refresh } } }
+        )
     }
 }
 

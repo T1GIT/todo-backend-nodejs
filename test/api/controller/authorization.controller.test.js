@@ -1,5 +1,5 @@
 const manager = require('../../../data/manager/memory.manager')
-const authorizationService = require('../../../data/service/authorization.service')
+const authorizationService = require('../../../api/controller/authorization.controller')
 const { KEY_LENGTH } = require('../../../middleware/security/config')
 
 
