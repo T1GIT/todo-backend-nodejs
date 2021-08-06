@@ -63,7 +63,7 @@ schema.pre('save', async function () {
     this.psw = bcrypt.hashSync(this.psw, keyLength.salt)
 })
 
-schema.method('isValidPsw', async function (psw) {
+schema.method('isValidPsw', function (psw) {
     return bcrypt.compareSync(psw, this.psw)
 })
 

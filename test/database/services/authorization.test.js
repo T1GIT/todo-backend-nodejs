@@ -39,9 +39,9 @@ describe("Authorization service", () => {
 
                 afterEach(manager.clear)
 
-                it("doesn't throw", async () => await expect(
-                    authorizationService.register({ ...profile.right }, fingerprint))
-                    .resolves.not.toThrow())
+                it("doesn't throw", () => expect(
+                    authorizationService.register({ ...profile.right }, fingerprint)
+                ).resolves.not.toThrow())
 
                 describe("returns valid", () => {
 
@@ -70,9 +70,11 @@ describe("Authorization service", () => {
 
                 afterEach(manager.clear)
 
-                it("doesn't throw", async () => await expect(
-                    authorizationService.register({ ...profile.right, ...profile.additional }, fingerprint))
-                    .resolves.not.toThrow())
+                it("doesn't throw", () => expect(
+                    authorizationService.register(
+                        { ...profile.right, ...profile.additional },
+                        fingerprint)
+                ).resolves.not.toThrow())
 
                 describe("returns valid", () => {
 
@@ -104,47 +106,46 @@ describe("Authorization service", () => {
 
         describe("can not be done", () => {
             describe("with incorrect", () => {
-                it("email", async () => {
-                    await expect(async () => await authorizationService.register({
+                it("email", () => expect(
+                    authorizationService.register({
                         email: profile.wrong.email,
                         psw: profile.right.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
-                it("password", async () => {
-                    await expect(async () => await authorizationService.register({
+                    }, fingerprint)
+                ).rejects.toThrow())
+                it("password", () => expect(
+                    authorizationService.register({
                         email: profile.right.email,
                         psw: profile.wrong.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
+                    }, fingerprint)
+                ).rejects.toThrow())
             })
 
             it("if email already exists", async () => {
                 await authorizationService.register({ ...profile.right }, fingerprint)
-                await expect(async () => await authorizationService.register({ ...profile.right }, fingerprint))
-                    .rejects.toThrow()
+                await expect(
+                    authorizationService.register({ ...profile.right }, fingerprint)
+                ).rejects.toThrow()
             })
         })
     })
 
     describe("login", () => {
 
-        afterEach(manager.clear)
+        beforeAll(async () => await authorizationService.register({ ...profile.right }, fingerprint))
+        afterAll(manager.clear)
 
         describe("can be done", () => {
-
-            beforeAll(async () => await authorizationService.register({ ...profile.right }, fingerprint))
-
-            it("without throwing", async () => await expect(
-                authorizationService.login({ ...profile.right }, fingerprint))
-                .resolves.not.toThrow())
+            it("without throwing", () => expect(
+                authorizationService.login(
+                    { ...profile.right },
+                    fingerprint)
+            ).resolves.not.toThrow())
 
             describe("and returns valid", () => {
 
                 let res
 
-                beforeAll(async () => res = await authorizationService.register({ ...profile.right }, fingerprint))
+                beforeAll(async () => res = await authorizationService.login({ ...profile.right }, fingerprint))
 
                 it("user", () => {
                     let { user } = res
@@ -164,40 +165,34 @@ describe("Authorization service", () => {
 
         describe("can not be done", () => {
 
-            beforeAll(async () => await authorizationService.register({ ...profile.right }, fingerprint))
-
             describe("if is invalid", () => {
-                it("email", async () => {
-                    await expect(async () => await authorizationService.login({
+                it("email", () => expect(
+                    authorizationService.login({
                         email: profile.another.email,
                         psw: profile.right.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
-                it("password", async () => {
-                    await expect(async () => await authorizationService.login({
+                    }, fingerprint)
+                ).rejects.toThrow())
+                it("password", () => expect(
+                    authorizationService.login({
                         email: profile.right.email,
                         psw: profile.another.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
+                    }, fingerprint)
+                ).rejects.toThrow())
             })
 
             describe("if is incorrect", () => {
-                it("email", async () => {
-                    await expect(async () => await authorizationService.login({
+                it("email", () => expect(
+                    authorizationService.login({
                         email: profile.wrong.email,
                         psw: profile.right.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
-                it("password", async () => {
-                    await expect(async () => await authorizationService.login({
+                    }, fingerprint)
+                ).rejects.toThrow())
+                it("password", () => expect(
+                    authorizationService.login({
                         email: profile.right.email,
                         psw: profile.wrong.psw
-                    }, fingerprint))
-                        .rejects.toThrow()
-                })
+                    }, fingerprint)
+                ).rejects.toThrow())
             })
         })
     })
@@ -212,9 +207,11 @@ describe("Authorization service", () => {
 
         describe("does", () => {
 
-            it("without error", async () =>
-                await expect(authorizationService.refresh(res.refresh, fingerprint))
-                    .resolves.not.toThrow()
+            it("without error", () => expect(
+                authorizationService.refresh(
+                    res.refresh,
+                    fingerprint)
+                ).resolves.not.toThrow()
             )
 
             it("returns new refresh", async () => {
@@ -226,13 +223,13 @@ describe("Authorization service", () => {
         })
 
         describe("doesn't if is invalid", () => {
-            it("refresh", async () =>
-                await expect(authorizationService.refresh('!' + res.refresh, fingerprint))
-                    .rejects.toThrow())
+            it("refresh", () => expect(
+                authorizationService.refresh('!' + res.refresh, fingerprint)
+            ).rejects.toThrow())
 
-            it("fingerprint", async () =>
-                await expect(authorizationService.refresh(res.refresh, '!' + fingerprint))
-                    .rejects.toThrow())
+            it("fingerprint", () => expect(
+                authorizationService.refresh(res.refresh, '!' + fingerprint)
+            ).rejects.toThrow())
         })
     })
 
@@ -244,13 +241,15 @@ describe("Authorization service", () => {
             beforeAll(async () => res = await authorizationService.register({ ...profile.right }, fingerprint))
             afterAll(manager.clear)
 
-            it("register", async () => await expect(authorizationService.logout(res.refresh))
-                .resolves.not.toThrow())
+            it("register", () => expect(
+                authorizationService.logout(res.refresh)
+            ).resolves.not.toThrow())
 
             it("login", async () => {
                 res = await authorizationService.login({ ...profile.right }, fingerprint)
-                await expect(authorizationService.logout(res.refresh))
-                    .resolves.not.toThrow()
+                await expect(
+                    authorizationService.logout(res.refresh)
+                ).resolves.not.toThrow()
             })
         })
     })
