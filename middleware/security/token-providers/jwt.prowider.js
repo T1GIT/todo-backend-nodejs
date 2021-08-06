@@ -1,5 +1,5 @@
 const jsonwebtoken = require('jsonwebtoken')
-const env = require('../../environment')
+const env = require('../../../environment')
 const { nanoid } = require('nanoid')
 const { keyLength, expirePeriod } = require('../config')
 

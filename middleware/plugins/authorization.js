@@ -1,4 +1,4 @@
-const jwtProvider = require('../security/token-providers/jwt')
+const jwtProvider = require('../security/token-providers/jwt.prowider')
 
 
 module.exports = (req, res, next) => {

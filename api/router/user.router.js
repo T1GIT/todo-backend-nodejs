@@ -1,7 +1,13 @@
 const express = require('express')
-const User = require('../../database/models/User')
+const User = require('../../data/model/User.model')
 
 const router = express.Router()
+
+router.get('/a', async (req, res) => {
+    console.log(req.cookies)
+    res.cookie("a", "b")
+    res.send("fije")
+})
 
 router.post('/users', async (req, res) => {
     try {
@@ -29,7 +35,7 @@ router.post('/users/login', async(req, res) => {
 
 })
 
-router.post('/users/me/logout', auth, async (req, res) => {
+router.post('/users/me/logout', async (req, res) => {
     try {
         req.user.tokens = req.user.tokens.filter((token) => {
             return token.token != req.token
@@ -39,9 +45,9 @@ router.post('/users/me/logout', auth, async (req, res) => {
     } catch (error) {
         res.status(500).send(error)
     }
-}) 
+})
 
-router.post('/users/me/logoutall', auth, async(req, res) => {
+router.post('/users/me/logoutall', async(req, res) => {
     try {
         req.user.tokens.splice(0, req.user.tokens.length)
         await req.user.save()

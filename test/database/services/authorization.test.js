@@ -1,6 +1,6 @@
-const manager = require('../../../database/manager/manager-in-memory')
-const authorizationService = require('../../../database/services/authorization')
-const { keyLength } = require('../../../security/config')
+const manager = require('../../../data/manager/memory.manager')
+const authorizationService = require('../../../data/service/authorization.service')
+const { keyLength } = require('../../../middleware/security/config')
 
 
 describe("Authorization service", () => {

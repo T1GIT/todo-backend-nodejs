@@ -1,5 +1,5 @@
 const cors = require("cors");
-const env = require("../environment");
+const env = require("../../environment");
 
 
 module.exports = cors({

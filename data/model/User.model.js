@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
 const validator = require('validator').default
-const SessionSchema = require('../schemas/Session')
+const SessionSchema = require('../schema/Session.schema')
 const bcrypt = require("bcrypt");
-const { keyLength } = require("../../security/config");
+const { keyLength } = require("../../middleware/security/config");
 
 
 const schema = new mongoose.Schema({

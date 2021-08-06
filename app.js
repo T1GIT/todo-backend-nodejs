@@ -1,7 +1,7 @@
 const express = require('express')
-const manager = require('./database/manager/manager-in-memory')
-const { bodyParser, cookieParser, corsConfig, errorHandler } = require('./middleware')
-const postsRoute = require('./api/routes/users')
+const manager = require('./data/manager/memory.manager')
+const { bodyParser, cookieParser, corsConfig, errorHandler } = require('./middleware/plugins')
+const postsRoute = require('./api/router/user.router')
 const env = require('./environment')
 const validator = require('validator').default
 
@@ -24,7 +24,7 @@ async function start() {
 
 
 
-        const User = require('./database/models/User')
+        const User = require('./data/model/User.model')
         await User.create({
             email: 'jfiejfh@gmail.com',
             psw: 'fiejhe83hff',

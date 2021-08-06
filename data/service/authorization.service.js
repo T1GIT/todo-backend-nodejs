@@ -1,8 +1,8 @@
-const User = require('../models/User')
-const { HttpError } = require("../../middleware/error-handler");
+const User = require('../model/User.model')
+const { HttpError } = require("../../middleware/plugins/error-handler");
 const { nanoid } = require('nanoid')
 const config = require('../config')
-const { keyLength, expirePeriod } = require('../../security/config')
+const { keyLength, expirePeriod } = require('../../middleware/security/config')
 
 
 async function addSession(user, fingerprint) {
