@@ -32,9 +32,9 @@ describe("Session service", () => {
                 const refresh = await sessionService.create(user, fingerprint)
                 expect(refresh).toBeDefined()
                 expect(typeof refresh === 'string').toBeTruthy()
-                expect(
-                    await sessionService.existsActive(refresh, fingerprint)
-                ).toBeTruthy()
+                await expect(
+                    sessionService.existsActive(refresh, fingerprint)
+                ).resolves.toBeTruthy()
             })
         })
     })
@@ -56,10 +56,12 @@ describe("Session service", () => {
 
             it('and changes only current session', async () => {
                 const newRefresh = await sessionService.update(refresh, fingerprint)
-                await expect(sessionService.existsActive(refresh, fingerprint))
-                    .resolves.toBeFalsy()
-                await expect(sessionService.existsActive(newRefresh, fingerprint))
-                    .resolves.toBeTruthy()
+                await expect(
+                    sessionService.existsActive(refresh, fingerprint)
+                ).resolves.toBeFalsy()
+                await expect(
+                    sessionService.existsActive(newRefresh, fingerprint)
+                ).resolves.toBeTruthy()
             })
         })
     })
@@ -99,10 +101,12 @@ describe("Session service", () => {
 
             it('after updating session', async () => {
                 const newRefresh = await sessionService.update(refresh, fingerprint)
-                await expect(sessionService.existsActive(refresh, fingerprint))
-                    .resolves.toBeFalsy()
-                await expect(sessionService.existsActive(newRefresh, fingerprint))
-                    .resolves.toBeTruthy()
+                await expect(
+                    sessionService.existsActive(refresh, fingerprint)
+                ).resolves.toBeFalsy()
+                await expect(
+                    sessionService.existsActive(newRefresh, fingerprint)
+                ).resolves.toBeTruthy()
             })
         })
     })

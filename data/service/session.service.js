@@ -33,7 +33,6 @@ class SessionCleaner {
 }
 
 class SessionService {
-
     clean = new SessionCleaner()
 
     async create(user, fingerprint) {

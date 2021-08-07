@@ -1,10 +1,5 @@
 const mongoose = require('mongoose')
-const validator = require('validator').default
 const SessionSchema = require('../schema/Session.schema')
-const bcrypt = require("bcrypt");
-const { InvalidPsw } = require("../../util/http-error");
-const { InvalidEmail } = require("../../util/http-error");
-const { KEY_LENGTH } = require("../../middleware/security/config");
 
 
 module.exports = new mongoose.Schema({
@@ -16,33 +11,37 @@ module.exports = new mongoose.Schema({
         minlength: 7,
         maxlength: 255,
         lowercase: true,
-        validate: validator.isEmail
     },
     psw: {
         type: String,
         required: true,
-        select: false,
-        validate: (psw) => validator.matches(psw, '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$')
+        select: false
     },
     name: {
         type: String,
         trim: true,
         minlength: 1,
         maxlength: 50,
+        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
     surname: {
         type: String,
         trim: true,
         minlength: 1,
-        maxlength: 50
+        maxlength: 50,
+        validate: /^[a-zA-Zа-яА-Я]*$/
     },
     patronymic: {
         type: String,
         trim: true,
         minlength: 1,
-        maxlength: 50
+        maxlength: 50,
+        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
-    birthdate: Date,
+    birthdate: {
+        type: Date,
+        validate: birthdate => birthdate < new Date()
+    },
     role: {
         type: String,
         required: true,

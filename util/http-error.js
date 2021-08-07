@@ -21,14 +21,24 @@ module.exports = {
             super(401, `${ email } not found`);
         }
     },
+    InvalidEmail: class extends HttpError {
+        constructor(email) {
+            super(422, `${ email } is invalid`);
+        }
+    },
+    InvalidPsw: class extends HttpError {
+        constructor(psw) {
+            super(422, `${ psw } is invalid`);
+        }
+    },
     WrongPsw: class extends HttpError {
         constructor(psw) {
-            super(`${ psw } is wrong`);
+            super(401, `${ psw } is wrong`);
         }
     },
     NoActiveSessions: class extends HttpError {
         constructor() {
-            super("can not find given session");
+            super(401, "can not find given session");
         }
     },
     JwtError: class extends HttpError {
