@@ -32,9 +32,10 @@ describe("User service", () => {
                     ).resolves.not.toThrow())
 
                 it("returns valid user", async () => {
-                    const { _id } = await userService.create(form)
+                    const user = await userService.create(form)
+                    expect(user).toBeDefined()
                     await expect(
-                        User.exists({ _id, ..._.without(form, 'psw')})
+                        User.exists({ _id: user._id, ..._.without(form, 'psw')})
                     ).resolves.toBeTruthy()
                 })
             })
@@ -47,9 +48,10 @@ describe("User service", () => {
                     ).resolves.not.toThrow())
 
                 it("returns valid user", async () => {
-                    const { _id } = await userService.create(formWithInfo)
+                    const user = await userService.create(formWithInfo)
+                    expect(user).toBeDefined()
                     await expect(
-                        User.exists({ _id, ..._.without(formWithInfo, 'psw')})
+                        User.exists({ _id: user._id, ..._.without(formWithInfo, 'psw')})
                     ).resolves.toBeTruthy()
                 })
             })

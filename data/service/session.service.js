@@ -17,7 +17,7 @@ class SessionCleaner {
         const sessions = (await User.findById(user).select('+sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {
             await User.findByIdAndUpdate(
-                user._id,
+                user,
                 { $set: { sessions: sessions.slice(sessions.length - config.MAX_SESSIONS) } }
             )
         }

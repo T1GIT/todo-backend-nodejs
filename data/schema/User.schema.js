@@ -22,6 +22,7 @@ module.exports = new mongoose.Schema({
         type: String,
         required: true,
         select: false,
+        validate: (psw) => validator.matches(psw, '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$')
     },
     name: {
         type: String,

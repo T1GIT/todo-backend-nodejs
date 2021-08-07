@@ -5,55 +5,36 @@ class HttpError extends Error {
     }
 }
 
-class NotFound extends HttpError {
-    constructor(stuff) {
-        super(404, `${stuff} not found`);
-    }
-}
-
-class EmailAlreadyExists extends HttpError {
-    constructor(email) {
-        super(409, `${ email } already exists`);
-    }
-}
-
-class EmailNotExists extends HttpError {
-    constructor(email) {
-        super(401, `${ email } not found`);
-    }
-}
-
-class WrongPsw extends HttpError {
-    constructor(psw) {
-        super(`${psw} is wrong`);
-    }
-}
-
-class InvalidEmail extends HttpError {
-    constructor(email) {
-        super(`${email} is invalid`);
-    }
-}
-
-class InvalidPsw extends HttpError {
-    constructor(psw) {
-        super(`${psw} is invalid`);
-    }
-}
-
-class NoActiveSessions extends HttpError {
-    constructor() {
-        super("can not find given session");
-    }
-}
-
-class JwtError extends HttpError {
-    constructor(msg) {
-        super(401, msg);
-    }
-}
-
 module.exports = {
-    HttpError, NotFound, EmailNotExists, EmailAlreadyExists, WrongPsw,
-    InvalidEmail, InvalidPsw, NoActiveSessions, JwtError
+    NotFound: class extends HttpError {
+        constructor(stuff) {
+            super(404, `${ stuff } not found`);
+        }
+    },
+    EmailAlreadyExists: class extends HttpError {
+        constructor(email) {
+            super(409, `${ email } already exists`);
+        }
+    },
+    EmailNotExists: class extends HttpError {
+        constructor(email) {
+            super(401, `${ email } not found`);
+        }
+    },
+    WrongPsw: class extends HttpError {
+        constructor(psw) {
+            super(`${ psw } is wrong`);
+        }
+    },
+    NoActiveSessions: class extends HttpError {
+        constructor() {
+            super("can not find given session");
+        }
+    },
+    JwtError: class extends HttpError {
+        constructor(msg) {
+            super(401, msg);
+        }
+    },
+    HttpError,
 }
