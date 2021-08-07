@@ -2,32 +2,24 @@ const manager = require('../../../data/manager/memory.manager')
 const userService = require('../../../data/service/user.service')
 const { KEY_LENGTH } = require('../../../middleware/security/config')
 const User = require('../../../data/model/User.model')
+const _ = require('lodash')
 
 
 describe("User service", () => {
 
     beforeAll(manager.connect)
     afterAll(manager.disconnect)
-
-    const profile = {
-        correct: {
-            email: 'right-email@mail.ru',
-            psw: 'right-password1',
-        },
-        invalid: {
-            email: 'bad email.mail.ru@',
-            psw: 'bad-psw'
-        },
-        another: {
-            email: 'another-email@mail.ru',
-            psw: 'another-password1'
-        },
-        additional: {
-            name: 'Ivan',
-            surname: 'Ivanovich',
-            patronymic: 'Ivanov',
-            birthdate: new Date(1970, 1, 1)
-        }
+    
+    const form = {
+        email: 'right-email@mail.ru',
+        psw: 'right-password1',
+    }
+    
+    const info = {
+        name: 'Ivan',
+        surname: 'Ivanovich',
+        patronymic: 'Ivanov',
+        birthdate: new Date(1970, 12, 31)
     }
 
     describe("creating", () => {
@@ -35,34 +27,30 @@ describe("User service", () => {
 
         describe("can be done with", () => {
             describe("short info", () => {
-                const form = { ...profile.correct }
-
                 it("doesn't throw", () => expect(
                         userService.create(form)
                     ).resolves.not.toThrow())
 
                 it("returns valid user", async () => {
-                    const user = await userService.create(form)
-                    expect(user).toBeDefined()
-                    expect(user.email).toBe(form.email)
+                    const { _id } = await userService.create(form)
+                    await expect(
+                        User.exists({ _id, ..._.without(form, 'psw')})
+                    ).resolves.toBeTruthy()
                 })
             })
 
             describe("full info", () => {
-                const form = { ...profile.correct, ...profile.additional }
+                const formWithInfo = { ...form, ...info }
 
                 it("doesn't throw", () => expect(
-                        userService.create(form)
+                        userService.create(formWithInfo)
                     ).resolves.not.toThrow())
 
                 it("returns valid user", async () => {
-                    const user = await userService.create(form)
-                    expect(user).toBeDefined()
-                    expect(user.email).toBe(form.email)
-                    expect(user.name).toBe(form.name)
-                    expect(user.surname).toBe(form.surname)
-                    expect(user.patronymic).toBe(form.patronymic)
-                    expect(user.birthdate).toBe(form.birthdate)
+                    const { _id } = await userService.create(formWithInfo)
+                    await expect(
+                        User.exists({ _id, ..._.without(formWithInfo, 'psw')})
+                    ).resolves.toBeTruthy()
                 })
             })
         })
@@ -71,21 +59,19 @@ describe("User service", () => {
             describe("if form contains invalid", () => {
                 it("email", () => expect(
                     userService.create({
-                        email: profile.invalid.email,
-                        psw: profile.correct.psw
+                        ...form,
+                        email: "invalid",
                     })
                 ).rejects.toThrow())
                 it("password", () => expect(
                     userService.create({
-                        email: profile.correct.email,
-                        psw: profile.invalid.psw
+                        ...form,
+                        psw: 'invalid'
                     })
                 ).rejects.toThrow())
             })
 
             it("if email already exists", async () => {
-                const form = { ...profile.correct }
-
                 await userService.create(form)
                 await expect(
                     userService.create(form)
@@ -95,54 +81,54 @@ describe("User service", () => {
     })
 
     describe("checking", () => {
-        const form = { ...profile.correct }
+        const formWithInfo = { ...form, ...info }
 
         beforeAll(async () => {
             await manager.clear()
-            return await userService.create(form);
+            return await userService.create(formWithInfo);
         })
         afterAll(manager.clear)
 
         describe("can be done", () => {
             it("without throwing", () => expect(
-                userService.check(form)
+                userService.checkAndGet(form)
             ).resolves.not.toThrow())
 
             it("and returns valid user", async () => {
-                const user = await userService.check(form)
+                const user = await userService.checkAndGet(formWithInfo)
+                const props = _.without(_.keys(formWithInfo), 'psw')
                 expect(user).toBeDefined()
-                expect(user.email).toBe(form.email)
+                expect(_.pick(user, ...props)).toEqual(_.pick(formWithInfo, ...props))
             })
         })
 
         describe("can not be done", () => {
-
             describe("if form contains invalid", () => {
                 it("email", () => expect(
-                    userService.check({
-                        email: profile.invalid.email,
-                        psw: profile.correct.psw
+                    userService.checkAndGet({
+                        ...form,
+                        email: 'invalid',
                     })
                 ).rejects.toThrow())
                 it("password", () => expect(
-                    userService.check({
-                        email: profile.correct.email,
-                        psw: profile.invalid.psw
+                    userService.checkAndGet({
+                        ...form,
+                        psw: 'invalid'
                     })
                 ).rejects.toThrow())
             })
 
             describe("if form contains wrong", () => {
                 it("email", () => expect(
-                    userService.check({
-                        email: profile.another.email,
-                        psw: profile.correct.psw
+                    userService.checkAndGet({
+                        ...form,
+                        email: 'another' + form.email
                     })
                 ).rejects.toThrow())
                 it("password", () => expect(
-                    userService.check({
-                        email: profile.correct.email,
-                        psw: profile.another.psw
+                    userService.checkAndGet({
+                        ...form,
+                        psw: 'another' + form.psw
                     })
                 ).rejects.toThrow())
             })

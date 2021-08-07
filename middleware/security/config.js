@@ -1,7 +1,7 @@
 module.exports = {
     KEY_LENGTH: {
         JWT: 40,
-        REFRESH: 30,
+        REFRESH: 50,
         COOKIE: 40,
         SALT: 12
     },

@@ -1,3 +1,3 @@
 module.exports = {
-    maxSessions: 5
+    MAX_SESSIONS: 5
 }

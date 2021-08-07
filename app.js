@@ -21,6 +21,10 @@ async function start() {
         console.log('Database has been connected')
         await app.listen(env.PORT, env.HOST)
         console.log(`Server has been started on address http://${ env.HOST }:${ env.PORT }`)
+
+        const validator = require('validator')
+        console.log(validator.isAlpha('jfiej', 'ru-RU', 'en-US'))
+
     } catch (e) {
         console.error(e)
     }

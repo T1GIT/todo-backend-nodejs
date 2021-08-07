@@ -27,7 +27,7 @@ module.exports = new mongoose.Schema({
         type: String,
         trim: true,
         minlength: 1,
-        maxlength: 50
+        maxlength: 50,
     },
     surname: {
         type: String,

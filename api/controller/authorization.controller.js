@@ -10,7 +10,7 @@ async function register(user, fingerprint) {
 }
 
 async function login(user, fingerprint) {
-    user = await userService.check(user)
+    user = await userService.checkAndGet(user)
     await sessionService.clean.fingerprint(user, fingerprint)
     const refresh = await sessionService.create(user, fingerprint)
     await sessionService.clean.overflow(user)
@@ -18,7 +18,7 @@ async function login(user, fingerprint) {
 }
 
 async function refresh(refresh, fingerprint) {
-    if (! await sessionService.exists(refresh, fingerprint)) {
+    if (! await sessionService.existsActive(refresh, fingerprint)) {
         await sessionService.clean.outdated()
         await sessionService.clean.abort(refresh, fingerprint)
         throw new NoActiveSessions()

@@ -10,7 +10,7 @@ module.exports = new mongoose.Schema({
         index: true,
         type: String,
         required: true,
-        immutable: true
+        immutable: true,
     },
     refresh: {
         index: true,
