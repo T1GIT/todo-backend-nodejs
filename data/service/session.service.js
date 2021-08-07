@@ -30,17 +30,6 @@ class SessionCleaner {
             { $pull: { sessions: { expires: { $lt: date } } } }
         );
     }
-
-    async abort(refresh, fingerprint) {
-        await User.updateMany({
-                $or: [
-                    { 'sessions.refresh': refresh },
-                    { 'sessions.fingerprint': fingerprint }
-                ]
-            },
-            { $pull: { sessions: { $or: [{ refresh }, { fingerprint }] } } }
-        )
-    }
 }
 
 class SessionService {
@@ -55,7 +44,7 @@ class SessionService {
             refresh, fingerprint
         }
         await User.findByIdAndUpdate(
-            user._id,
+            user,
             { $push: { sessions: session } },
             { runValidators: true }
         )

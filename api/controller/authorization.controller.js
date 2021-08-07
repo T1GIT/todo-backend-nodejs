@@ -20,7 +20,7 @@ async function login(user, fingerprint) {
 async function refresh(refresh, fingerprint) {
     if (! await sessionService.existsActive(refresh, fingerprint)) {
         await sessionService.clean.outdated()
-        await sessionService.clean.abort(refresh, fingerprint)
+        await sessionService.remove(refresh, fingerprint)
         throw new NoActiveSessions()
     }
     return sessionService.update(refresh)

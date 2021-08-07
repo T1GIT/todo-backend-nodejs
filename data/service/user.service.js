@@ -1,10 +1,7 @@
 const User = require('../model/User.model')
 const bcrypt = require("bcrypt");
 const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
-const _ = require('lodash')
 
-
-const hiddenFields = ['sessions', 'psw']
 
 class UserService {
     async create(user) {
@@ -12,7 +9,9 @@ class UserService {
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
         user = await User.create({psw, email, name, surname, patronymic, birthdate})
-        return _.omit(user, ...hiddenFields)
+        delete user.psw
+        delete user.sessions
+        return user
     }
 
     async checkAndGet(user) {
@@ -22,7 +21,8 @@ class UserService {
             throw new EmailNotExists(email)
         if (!bcrypt.compareSync(psw, user.psw))
             throw new WrongPsw(psw)
-        return _.omit(user, ...hiddenFields)
+        delete user.psw
+        return user
     }
 }
 
