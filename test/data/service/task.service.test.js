@@ -1,6 +1,7 @@
 const manager = require("../../../data/manager/memory.manager");
 const userService = require('../../../data/service/user.service')
 const categoryService = require('../../../data/service/category.service')
+const taskService = require('../../../data/service/task.service')
 const Category = require('../../../data/model/Category.model')
 
 
@@ -13,8 +14,14 @@ const category = {
     name: 'category-name'
 }
 
-describe('Category service', () => {
+const task = {
+    title: 'task-title',
+    description: 'task-description'
+}
+
+describe('Task service', () => {
     let user
+    let categoryId
 
     beforeAll(manager.connect)
     afterAll(manager.disconnect)
@@ -22,38 +29,43 @@ describe('Category service', () => {
     beforeEach(async () => {
         await manager.clear()
         user = await userService.create(form)
+        categoryId = await categoryService.create(user._id, category)
     })
 
-    it('gets category', async () => {
+    it('gets tasks', async () => {
         const amount = 5
-        for (let i = 0; i < amount; i++) {
-            await categoryService.create(user._id, category)
-        }
+        for (let i = 0; i < amount; i++)
+            await taskService.create(categoryId, task)
 
         await expect(
-            categoryService.getByUser(user._id)
+            taskService.getByCategory(categoryId)
         ).resolves.toHaveLength(amount)
     })
 
-    it('creates category', async () => {
-        const categoryId = await categoryService.create(user._id, category)
+    it('creates task', async () => {
+        const taskId = await taskService.create(categoryId, task)
 
         await expect(
-            Category.exists({ _id: categoryId })
+            Category.exists({ 'tasks._id': taskId })
         ).resolves.toBeTruthy()
     })
 
-    it('updates category', async () => {
-        const categoryId = await categoryService.create(user._id, category)
+    it('updates task', async () => {
+        const taskId = await taskService.create(categoryId, task)
 
-        const anotherCategory = {
-            name: category.name + 'another'
+        const anotherTask = {
+            title: task.title + 'another',
+            description: task.description + 'another'
         }
 
-        await categoryService.update(categoryId, anotherCategory)
+        await taskService.update(taskId, anotherTask)
 
         await expect(
-            Category.exists({ _id: categoryId, ...anotherCategory })
+            Category.exists({
+                _id: categoryId,
+                'tasks.title': anotherTask.title,
+                'tasks.description': anotherTask.description
+            })
         ).resolves.toBeTruthy()
     })
 

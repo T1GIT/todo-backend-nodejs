@@ -54,10 +54,7 @@ class SessionService {
         const newRefresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
         await User.updateOne(
-            {
-                'sessions.refresh': refresh,
-                'sessions.fingerprint': fingerprint
-            },
+            { 'sessions.refresh': refresh, 'sessions.fingerprint': fingerprint },
             {
                 $set: {
                     'sessions.$.refresh': newRefresh,

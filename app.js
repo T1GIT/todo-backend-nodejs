@@ -26,18 +26,14 @@ async function start() {
         const Category = require('./data/model/Category.model')
         const sessionService = require('./data/service/session.service')
 
-        let user = await User.create({ email: 'fjiejfih@fheufh.ru', psw: 'ejfihef9h2hh' })
-        const amount = 10
-        let category
-        for (let i = 0; i < amount; i++) {
-            category = await Category.create({ name: 'name' + i })
-            await User.findByIdAndUpdate(
-                user,
-                { $push: { categories: category } }
-            )
-        }
-        user = await User.findByIdAndDelete(user).select('categories')
-        console.log(user)
+        const categoryId = (await Category.create({name: 'ijefij'}))._id
+
+        const a = await Category.findOneAndUpdate(
+            { _id: categoryId },
+            { $pull: { tasks: { title: 'iefj', description: 'iejfh' } } },
+            { runValidators: true }
+        )
+        console.log(a)
 
     } catch (e) {
         console.error(e)

@@ -1,5 +1,4 @@
 const Category = require('../model/Category.model')
-const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
 
 
 class TaskService {
@@ -7,20 +6,23 @@ class TaskService {
         return (await Category
                 .findById(categoryId)
                 .select('tasks')
-                .populate('tasks')
         ).tasks
     }
 
     async create(categoryId, task) {
         const { title, description } = task
-        const createdTask = await Category.create({ title, description })
-        return createdTask._id
+        const tasks = (await Category.findOneAndUpdate(
+            { _id: categoryId },
+            { $push: { tasks: { title, description } } },
+            { runValidators: true, new: true }
+        ).select('tasks')).tasks
+        return tasks[tasks.length - 1]._id
     }
 
     async update(taskId, task) {
         const { title, description } = task
         await Category.updateOne(
-            { _id: taskId },
+            { 'tasks._id': taskId },
             { title, description },
             { runValidators: true }
         )
@@ -28,7 +30,7 @@ class TaskService {
 
     async updateCompleted(taskId, completed) {
         await Category.updateOne(
-            { _id: taskId },
+            { 'tasks._id': taskId },
             {
                 completed,
                 executeDate: completed
