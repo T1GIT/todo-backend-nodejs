@@ -2,6 +2,7 @@ const manager = require('../../../data/manager/memory.manager')
 const userService = require('../../../data/service/user.service')
 const { KEY_LENGTH } = require('../../../middleware/security/config')
 const User = require('../../../data/model/User.model')
+const Category = require('../../../data/model/Category.model')
 const _ = require('lodash')
 
 
@@ -269,6 +270,45 @@ describe("User service", () => {
             await userService.changeInfo(userId, { role: 'ADMIN' })
             await expect(
                 User.exists({ _id: userId, role: 'ADMIN' })
+            ).resolves.toBeFalsy()
+        })
+    })
+
+    describe("remove", () => {
+        let user
+
+        beforeEach(async () => user = await userService.create(form))
+        afterEach(manager.clear)
+
+        describe("doesn't throw", () => {
+            it("if user have existed before", () => expect(
+                userService.remove(user._id)
+            ).resolves.not.toThrow())
+
+            it("if user haven't existed before", async () => {
+                await userService.remove(user._id)
+                await expect(
+                    userService.remove(user._id)
+                ).resolves.not.toThrow()
+            })
+        })
+
+        it("really removes the user", async () => {
+            await expect(
+                User.exists(user)
+            ).resolves.toBeTruthy()
+            const amount = 10
+            let category
+            for (let i = 0; i < amount; i++) {
+                category = await Category.create({ name: 'name' + i })
+                await User.findByIdAndUpdate(
+                    user,
+                    { $push: { categories: category } }
+                )
+            }
+            await userService.remove(user._id)
+            await expect(
+                User.exists(user)
             ).resolves.toBeFalsy()
         })
     })

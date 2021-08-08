@@ -1,4 +1,5 @@
 const User = require('../model/User.model')
+const Category = require('../model/Category.model')
 const bcrypt = require("bcrypt");
 const validator = require('validator').default
 const { KEY_LENGTH } = require("../../middleware/security/config");
@@ -23,8 +24,8 @@ class Validator {
 class UserService {
     validator = new Validator()
 
-    async create(form) { // TODO: Separate to arguments
-        const {email, psw, name, surname, patronymic, birthdate} = form
+    async create(user) {
+        const {email, psw, name, surname, patronymic, birthdate} = user
         this.validator.email(email)
         this.validator.psw(psw)
         if (await User.exists({ email }))
@@ -36,11 +37,11 @@ class UserService {
         })
         delete createdUser.psw
         delete createdUser.sessions
-        return createdUser
+        return createdUser // TODO: return id
     }
 
-    async checkAndGet(form) {
-        const { email, psw } = form
+    async checkAndGet(user) {
+        const { email, psw } = user
         this.validator.email(email)
         this.validator.psw(psw)
         const foundUser = await User.findOne({ email }).select('+psw').lean()
@@ -76,6 +77,12 @@ class UserService {
             { _id: userId },
             { name, surname, patronymic, birthdate },
             { runValidators: true})
+    }
+
+    async remove(userId) {
+        const deletedUser = await User.findByIdAndDelete(userId).select('categories')
+        if (deletedUser)
+            await Category.deleteMany({ _id: { $in: deletedUser.categories } })
     }
 }
 

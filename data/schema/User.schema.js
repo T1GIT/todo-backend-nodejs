@@ -52,10 +52,13 @@ module.exports = new mongoose.Schema({
         type: [SessionSchema],
         select: false
     },
-    categories: [
-        {
-            type: mongoose.Types.ObjectId,
-            ref: 'Category'
-        }
-    ]
+    categories: {
+        type: [
+            {
+                type: mongoose.Types.ObjectId,
+                ref: 'Category'
+            }
+        ],
+        select: false
+    }
 })

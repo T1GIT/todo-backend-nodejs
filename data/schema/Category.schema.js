@@ -8,5 +8,8 @@ module.exports = new mongoose.Schema({
         minlength: 0,
         maxlength: 100
     },
-    tasks: [TaskSchema]
+    tasks: {
+        type: [TaskSchema],
+        select: false
+    }
 })

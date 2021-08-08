@@ -22,8 +22,22 @@ async function start() {
         await app.listen(env.PORT, env.HOST)
         console.log(`Server has been started on address http://${ env.HOST }:${ env.PORT }`)
 
-        const validator = require('validator')
-        console.log(validator.isAlpha('jfiej', 'ru-RU', 'en-US'))
+        const User = require('./data/model/User.model')
+        const Category = require('./data/model/Category.model')
+        const sessionService = require('./data/service/session.service')
+
+        let user = await User.create({ email: 'fjiejfih@fheufh.ru', psw: 'ejfihef9h2hh' })
+        const amount = 10
+        let category
+        for (let i = 0; i < amount; i++) {
+            category = await Category.create({ name: 'name' + i })
+            await User.findByIdAndUpdate(
+                user,
+                { $push: { categories: category } }
+            )
+        }
+        user = await User.findByIdAndDelete(user).select('categories')
+        console.log(user)
 
     } catch (e) {
         console.error(e)
