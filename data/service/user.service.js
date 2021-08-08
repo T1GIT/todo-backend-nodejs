@@ -57,7 +57,7 @@ class UserService {
         this.validator.email(email)
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
-        await User.findByIdAndUpdate(
+        await User.updateOne(
             { _id: userId },
             { email },
             { runValidators: true})
@@ -65,7 +65,7 @@ class UserService {
 
     async changePsw(userId, psw) {
         this.validator.psw(psw)
-        await User.findByIdAndUpdate(
+        await User.updateOne(
             { _id: userId },
             { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) },
             { runValidators: true})
@@ -73,7 +73,7 @@ class UserService {
 
     async changeInfo(userId, info) {
         const {name, surname, patronymic, birthdate} = info
-        await User.findByIdAndUpdate(
+        await User.updateOne(
             { _id: userId },
             { name, surname, patronymic, birthdate },
             { runValidators: true})

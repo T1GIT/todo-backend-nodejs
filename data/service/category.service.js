@@ -18,7 +18,11 @@ class CategoryService {
         return createdCategory._id
     }
 
-    async cha(userId, email) {
+    async changeName(categoryId, name) {
+        await Category.updateOne(
+
+        )
+
         this.validator.email(email)
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)

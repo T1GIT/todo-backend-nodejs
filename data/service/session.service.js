@@ -16,8 +16,8 @@ class SessionCleaner {
     async overflow(user) {
         const sessions = (await User.findById(user).select('+sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {
-            await User.findByIdAndUpdate(
-                user,
+            await User.updateOne(
+                { _id: user._id },
                 { $set: { sessions: sessions.slice(sessions.length - config.MAX_SESSIONS) } }
             )
         }
@@ -42,8 +42,8 @@ class SessionService {
             expires: date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH),
             refresh, fingerprint
         }
-        await User.findByIdAndUpdate(
-            user,
+        await User.updateOne(
+            { _id: user._id },
             { $push: { sessions: session } },
             { runValidators: true }
         )
