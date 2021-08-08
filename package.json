@@ -4,9 +4,9 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "production": "set NODE_ENV=production && node app\"",
-    "development": "nodemon app",
-    "test": "jest --runInBand ./test"
+    "production": "set NODE_ENV=production && node app",
+    "development": "set NODE_ENV=development && nodemon app",
+    "test": "set NODE_ENV=test && jest"
   },
   "dependencies": {
     "bcrypt": "^5.0.1",
@@ -15,6 +15,7 @@
     "dotenv": "^10.0.0",
     "express": "^4.17.1",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
     "mongoose": "^5.13.5",
     "nanoid": "^3.1.23",
     "validator": "^13.6.0"
@@ -23,9 +24,6 @@
     "jest": "^27.0.6",
     "mongodb-memory-server": "^7.3.4",
     "nodemon": "^2.0.12"
-  },
-  "jest":{
-    "testEnvironment": "node"
   },
   "keywords": [],
   "author": "",
