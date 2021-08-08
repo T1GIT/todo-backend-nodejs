@@ -53,7 +53,7 @@ class UserService {
         return foundUser
     }
 
-    async changeEmail(userId, email) {
+    async updateEmail(userId, email) {
         this.validator.email(email)
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
@@ -63,7 +63,7 @@ class UserService {
             { runValidators: true})
     }
 
-    async changePsw(userId, psw) {
+    async updatePsw(userId, psw) {
         this.validator.psw(psw)
         await User.updateOne(
             { _id: userId },
@@ -71,8 +71,8 @@ class UserService {
             { runValidators: true})
     }
 
-    async changeInfo(userId, info) {
-        const {name, surname, patronymic, birthdate} = info
+    async updateInfo(userId, info) {
+        const { name, surname, patronymic, birthdate } = info
         await User.updateOne(
             { _id: userId },
             { name, surname, patronymic, birthdate },
@@ -80,9 +80,9 @@ class UserService {
     }
 
     async remove(userId) {
-        const deletedUser = await User.findByIdAndDelete(userId).select('categories')
-        if (deletedUser)
-            await Category.deleteMany({ _id: { $in: deletedUser.categories } })
+        const removedUser = await User.findByIdAndDelete(userId).select('categories')
+        if (removedUser)
+            await Category.deleteMany({ _id: { $in: removedUser.categories } })
     }
 }
 
