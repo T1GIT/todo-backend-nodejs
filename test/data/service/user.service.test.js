@@ -95,11 +95,11 @@ describe("User service", () => {
 
         describe("can be done", () => {
             it("without throwing", () => expect(
-                userService.checkAndGet(form)
+                userService.check(form)
             ).resolves.not.toThrow())
 
             it("and returns valid user", async () => {
-                const user = await userService.checkAndGet(formWithInfo)
+                const user = await userService.check(formWithInfo)
                 const props = _.without(_.keys(formWithInfo), 'psw')
                 expect(user).toBeDefined()
                 expect(_.pick(user, ...props)).toEqual(_.pick(formWithInfo, ...props))
@@ -109,13 +109,13 @@ describe("User service", () => {
         describe("can not be done", () => {
             describe("if form contains invalid", () => {
                 it("email", () => expect(
-                    userService.checkAndGet({
+                    userService.check({
                         ...form,
                         email: 'invalid',
                     })
                 ).rejects.toThrow())
                 it("password", () => expect(
-                    userService.checkAndGet({
+                    userService.check({
                         ...form,
                         psw: 'invalid'
                     })
@@ -124,13 +124,13 @@ describe("User service", () => {
 
             describe("if form contains wrong", () => {
                 it("email", () => expect(
-                    userService.checkAndGet({
+                    userService.check({
                         ...form,
                         email: 'another' + form.email
                     })
                 ).rejects.toThrow())
                 it("password", () => expect(
-                    userService.checkAndGet({
+                    userService.check({
                         ...form,
                         psw: 'another' + form.psw
                     })
@@ -153,22 +153,22 @@ describe("User service", () => {
 
             it("doesn't throw", async () => {
                 await expect(
-                    userService.updateEmail(userId, anotherEmail)
+                    userService.changeEmail(userId, anotherEmail)
                 ).resolves.not.toThrow()
             })
 
             describe("after change", () => {
                 it("database info has been updated", async () => {
-                    await userService.updateEmail(userId, anotherEmail)
+                    await userService.changeEmail(userId, anotherEmail)
                     await expect(
                         User.exists({ email: anotherEmail })
                     ).resolves.toBeTruthy()
                 })
 
                 it("you can login with a new email", async () => {
-                    await userService.updateEmail(userId, anotherEmail)
+                    await userService.changeEmail(userId, anotherEmail)
                     await expect(
-                        userService.checkAndGet({
+                        userService.check({
                             ...form,
                             email: anotherEmail
                         })
@@ -179,7 +179,7 @@ describe("User service", () => {
 
         it("fails with invalid email", async () => {
             await expect(
-                userService.updateEmail(userId, 'invalid')
+                userService.changeEmail(userId, 'invalid')
             ).rejects.toThrow()
         })
     })
@@ -198,14 +198,14 @@ describe("User service", () => {
 
             it("doesn't throw", async () => {
                 await expect(
-                    userService.updatePsw(userId, anotherPsw)
+                    userService.changePsw(userId, anotherPsw)
                 ).resolves.not.toThrow()
             })
 
             it("after change you can login with a new password", async () => {
-                await userService.updatePsw(userId, anotherPsw)
+                await userService.changePsw(userId, anotherPsw)
                 await expect(
-                    userService.checkAndGet({
+                    userService.check({
                         ...form,
                         psw: anotherPsw
                     })
@@ -215,7 +215,7 @@ describe("User service", () => {
 
         it("fails with invalid password", async () => {
             await expect(
-                userService.updatePsw(userId, 'invalid')
+                userService.changePsw(userId, 'invalid')
             ).rejects.toThrow()
         })
     })
@@ -233,12 +233,12 @@ describe("User service", () => {
         describe("with valid info", () => {
             it("doesn't throw", async () => {
                 await expect(
-                    userService.updateInfo(userId, info)
+                    userService.changeInfo(userId, info)
                 ).resolves.not.toThrow()
             })
 
             it("all changes are saved", async () => {
-                await userService.updateInfo(userId, info)
+                await userService.changeInfo(userId, info)
                 await expect(
                     User.exists({ _id: userId, ..._.without(form, 'psw'), ...info })
                 ).resolves.toBeTruthy()
@@ -247,28 +247,28 @@ describe("User service", () => {
 
         describe("fails with invalid", () => {
             it("name", () => expect(
-                userService.updateInfo(userId, { name: '123' })
+                userService.changeInfo(userId, { name: '123' })
             ).rejects.toThrow())
 
             it("surname", () => expect(
-                userService.updateInfo(userId, { surname: '123' })
+                userService.changeInfo(userId, { surname: '123' })
             ).rejects.toThrow())
 
             it("patronymic", () => expect(
-                userService.updateInfo(userId, { patronymic: '123' })
+                userService.changeInfo(userId, { patronymic: '123' })
             ).rejects.toThrow())
 
             it("birthdate", async () => {
                 const date = new Date()
                 await expect(
-                    userService.updateInfo(userId, { birthdate: date.setDate(date.getDate() + 1) })
+                    userService.changeInfo(userId, { birthdate: date.setDate(date.getDate() + 1) })
                 ).rejects.toThrow()
             })
         })
 
         it("can't change role", async () => {
             await User.findByIdAndUpdate({ _id: userId }, { role: 'BASIC' })
-            await userService.updateInfo(userId, { role: 'ADMIN' })
+            await userService.changeInfo(userId, { role: 'ADMIN' })
             await expect(
                 User.exists({ _id: userId, role: 'ADMIN' })
             ).resolves.toBeFalsy()

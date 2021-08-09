@@ -37,10 +37,10 @@ class UserService {
         })
         delete createdUser.psw
         delete createdUser.sessions
-        return createdUser // TODO: return id
+        return createdUser
     }
 
-    async checkAndGet(user) {
+    async check(user) {
         const { email, psw } = user
         this.validator.email(email)
         this.validator.psw(psw)
@@ -53,7 +53,7 @@ class UserService {
         return foundUser
     }
 
-    async updateEmail(userId, email) {
+    async changeEmail(userId, email) {
         this.validator.email(email)
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
@@ -63,7 +63,7 @@ class UserService {
             { runValidators: true})
     }
 
-    async updatePsw(userId, psw) {
+    async changePsw(userId, psw) {
         this.validator.psw(psw)
         await User.updateOne(
             { _id: userId },
@@ -71,7 +71,7 @@ class UserService {
             { runValidators: true})
     }
 
-    async updateInfo(userId, info) {
+    async changeInfo(userId, info) {
         const { name, surname, patronymic, birthdate } = info
         await User.updateOne(
             { _id: userId },

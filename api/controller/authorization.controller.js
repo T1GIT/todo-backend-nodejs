@@ -10,7 +10,7 @@ async function register(user, fingerprint) {
 }
 
 async function login(user, fingerprint) {
-    user = await userService.checkAndGet(user)
+    user = await userService.check(user)
     await sessionService.clean.fingerprint(user, fingerprint)
     const refresh = await sessionService.create(user, fingerprint)
     await sessionService.clean.overflow(user)
