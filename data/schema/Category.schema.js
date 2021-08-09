@@ -12,4 +12,4 @@ module.exports = new mongoose.Schema({
         type: [TaskSchema],
         select: false
     }
-})
+}, {versionKey: false})

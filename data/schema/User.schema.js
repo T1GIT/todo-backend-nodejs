@@ -61,4 +61,4 @@ module.exports = new mongoose.Schema({
         ],
         select: false
     }
-})
+}, {versionKey: false})

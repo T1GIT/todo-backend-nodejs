@@ -5,7 +5,7 @@
   "main": "app.js",
   "scripts": {
     "production": "set NODE_ENV=production && node app",
-    "development": "set NODE_ENV=development && nodemon app",
+    "development": "set NODE_ENV=development && nodemon app --unhandled-rejections=strict",
     "test": "set NODE_ENV=test && jest"
   },
   "dependencies": {

@@ -1,14 +1,14 @@
-const { EXPIRE_PERIOD } = require("../../middleware/security/config");
-const { KEY_LENGTH } = require("../../middleware/security/config");
+const { EXPIRE_PERIOD } = require("../../security/config");
+const { KEY_LENGTH } = require("../../security/config");
 const User = require("../model/User.model")
 const { nanoid } = require("nanoid");
 const config = require("../config")
 
 
 class SessionCleaner {
-    async fingerprint(fingerprint) {
-        await User.updateMany(
-            { 'sessions.fingerprint': fingerprint },
+    async fingerprint(userId, fingerprint) {
+        await User.updateOne(
+            { _id: userId, 'sessions.fingerprint': fingerprint },
             { $pull: { sessions: { fingerprint } } }
         )
     }
@@ -35,7 +35,7 @@ class SessionCleaner {
 class SessionService {
     clean = new SessionCleaner()
 
-    async create(user, fingerprint) {
+    async create(userId, fingerprint) {
         const refresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
         const session = {
@@ -43,7 +43,7 @@ class SessionService {
             refresh, fingerprint
         }
         await User.updateOne(
-            { _id: user._id },
+            { _id: userId },
             { $push: { sessions: session } },
             { runValidators: true }
         )

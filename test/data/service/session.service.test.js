@@ -25,11 +25,11 @@ describe("Session service", () => {
 
         describe('can be done', () => {
             it('without throwing', () => expect(
-                sessionService.create(user, fingerprint)
+                sessionService.create(user._id, fingerprint)
             ).resolves.not.toThrow())
 
             it('and returns valid refresh', async () => {
-                const refresh = await sessionService.create(user, fingerprint)
+                const refresh = await sessionService.create(user._id, fingerprint)
                 expect(refresh).toBeDefined()
                 expect(typeof refresh === 'string').toBeTruthy()
                 await expect(
@@ -45,7 +45,7 @@ describe("Session service", () => {
 
         beforeEach(async () => {
             user = await userService.create(form)
-            refresh = await sessionService.create(user, fingerprint)
+            refresh = await sessionService.create(user._id, fingerprint)
         })
         afterEach(manager.clean)
 
@@ -72,7 +72,7 @@ describe("Session service", () => {
 
         beforeEach(async () => {
             user = await userService.create(form)
-            refresh = await sessionService.create(user, fingerprint)
+            refresh = await sessionService.create(user._id, fingerprint)
         })
         afterEach(manager.clean)
 
@@ -119,7 +119,7 @@ describe("Session service", () => {
 
         describe('works correctly with', () => {
             it('normal session', async () => {
-                const refresh = await sessionService.create(user, fingerprint)
+                const refresh = await sessionService.create(user._id, fingerprint)
                 await sessionService.remove(refresh, fingerprint)
                 await expect(
                     sessionService.existsActive(refresh, fingerprint)
@@ -130,7 +130,7 @@ describe("Session service", () => {
                 const amount = 10
                 let refresh
                 for (let i = 0; i < amount; i++)
-                    refresh = await sessionService.create(user, fingerprint)
+                    refresh = await sessionService.create(user._id, fingerprint)
                 await sessionService.remove(refresh, fingerprint)
                 await expect(
                     User.exists({ _id: user._id, 'sessions.fingerprint': fingerprint })
@@ -149,17 +149,17 @@ describe("Session service", () => {
             it('repeated fingerprint in different sessions', async () => {
                 const amount = 10
                 for (let i = 0; i < amount; i++)
-                    await sessionService.create(user, fingerprint)
-                await sessionService.clean.fingerprint(fingerprint)
+                    await sessionService.create(user._id, fingerprint)
+                await sessionService.clean.fingerprint(user._id, fingerprint)
                 await expect(
-                    User.exists({ 'sessions.fingerprint': fingerprint })
+                    User.exists({ _id: user._id, 'sessions.fingerprint': fingerprint })
                 ).resolves.toBeFalsy()
             })
 
             it('overflowing of sessions', async () => {
                 const amount = MAX_SESSIONS + 5
                 for (let i = 0; i < amount; i++)
-                    await sessionService.create(user, fingerprint + i)
+                    await sessionService.create(user._id, fingerprint + i)
                 await sessionService.clean.overflow(user._id)
                 expect(
                     (await User.findById(user._id).select('sessions')).sessions
@@ -169,7 +169,7 @@ describe("Session service", () => {
             it('outdated sessions', async () => {
                 const amount = 5
                 for (let i = 0; i < amount; i++)
-                    await sessionService.create(user, fingerprint + i)
+                    await sessionService.create(user._id, fingerprint + i)
                 await User.updateOne(
                     { _id: user._id },
                     { $set: { 'sessions.$[].expires': new Date(0) } })

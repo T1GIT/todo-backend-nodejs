@@ -1,6 +1,6 @@
 const manager = require('../../../data/manager/memory.manager')
 const userService = require('../../../data/service/user.service')
-const { KEY_LENGTH } = require('../../../middleware/security/config')
+const { KEY_LENGTH } = require('../../../security/config')
 const User = require('../../../data/model/User.model')
 const Category = require('../../../data/model/Category.model')
 const _ = require('lodash')
@@ -60,21 +60,6 @@ describe("User service", () => {
         })
 
         describe("can not be done", () => {
-            describe("if form contains invalid", () => {
-                it("email", () => expect(
-                    userService.create({
-                        ...form,
-                        email: "invalid",
-                    })
-                ).rejects.toThrow())
-                it("password", () => expect(
-                    userService.create({
-                        ...form,
-                        psw: 'invalid'
-                    })
-                ).rejects.toThrow())
-            })
-
             it("if email already exists", async () => {
                 await userService.create(form)
                 await expect(
@@ -176,12 +161,6 @@ describe("User service", () => {
                 })
             })
         })
-
-        it("fails with invalid email", async () => {
-            await expect(
-                userService.changeEmail(userId, 'invalid')
-            ).rejects.toThrow()
-        })
     })
 
     describe("changePsw", () => {
@@ -211,12 +190,6 @@ describe("User service", () => {
                     })
                 ).resolves.not.toThrow()
             })
-        })
-
-        it("fails with invalid password", async () => {
-            await expect(
-                userService.changePsw(userId, 'invalid')
-            ).rejects.toThrow()
         })
     })
 

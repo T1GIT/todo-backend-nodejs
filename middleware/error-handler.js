@@ -1,8 +1,8 @@
-const { HttpError } = require("../../util/http-error");
-const env = require('../../environment')
+const { HttpError } = require("../util/http-error");
+const env = require('../environment')
 
 
-const errorHandler = async (err, req, res) => {
+const errorHandler = async (err, req, res, next) => {
     const body = {}
     body.error = err.name
     body.message = err.message
@@ -13,7 +13,9 @@ const errorHandler = async (err, req, res) => {
             : 500
     if (env.NODE_ENV !== 'production')
         body.trace = err.stack
-    return res.status(body.code).send(body)
+
+    console.log(err, req, res, next)
+    res.status(body.code).send(body)
 }
 
 module.exports = errorHandler

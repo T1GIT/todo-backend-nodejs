@@ -46,5 +46,10 @@ module.exports = {
             super(401, msg);
         }
     },
+    BadRequest: class extends HttpError {
+        constructor(msg) {
+            super(400, msg);
+        }
+    },
     HttpError,
 }

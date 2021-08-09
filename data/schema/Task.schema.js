@@ -19,5 +19,5 @@ module.exports = new mongoose.Schema({
         default: false
     },
     executeDate: Date
-})
+}, {versionKey: false})
 

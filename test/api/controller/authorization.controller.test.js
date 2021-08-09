@@ -1,6 +1,6 @@
 const manager = require('../../../data/manager/memory.manager')
 const authorizationService = require('../../../api/controller/authorization.controller')
-const { KEY_LENGTH } = require('../../../middleware/security/config')
+const { KEY_LENGTH } = require('../../../security/config')
 
 
 describe("Authorization service", () => {

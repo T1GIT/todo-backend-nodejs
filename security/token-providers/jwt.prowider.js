@@ -1,7 +1,9 @@
 const jsonwebtoken = require('jsonwebtoken')
-const env = require('../../../environment')
+const env = require('../../environment')
+const { JwtError } = require("../../util/http-error");
 const { nanoid } = require('nanoid')
 const { KEY_LENGTH, EXPIRE_PERIOD } = require('../config')
+
 
 
 class JwtProvider {
