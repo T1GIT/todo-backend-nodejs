@@ -3,80 +3,84 @@ const Category = require('../model/Category.model')
 const bcrypt = require("bcrypt");
 const validator = require('validator').default
 const { KEY_LENGTH } = require("../../middleware/security/config");
-const { WrongPsw, EmailNotExists, EmailAlreadyExists, InvalidEmail, InvalidPsw } = require("../../util/http-error")
+const { NotFound, WrongPsw, EmailNotExists, EmailAlreadyExists, InvalidEmail, InvalidPsw } = require("../../util/http-error")
+const _ = require('lodash')
 
 
-class Validator {
-    static pswRegExp = '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'
+const pswRegExp = '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'
+const hiddenFields = ['psw', 'sessions', 'categories']
 
-    psw(psw) {
-        if (!validator.matches(psw, Validator.pswRegExp))
-            throw new InvalidPsw(psw)
-    }
+function validateEmail(email) {
+    if (!validator.isEmail(email))
+        throw new InvalidEmail(email)
+}
 
-    email(email) {
-        if (!validator.isEmail(email))
-            throw new InvalidEmail(email)
-    }
+function validatePsw(psw) {
+    if (!validator.matches(psw, pswRegExp))
+        throw new InvalidPsw(psw)
+}
+
+async function existsById(userId) {
+    if (!await User.exists({ _id: userId }))
+        throw new NotFound(`user with id ${userId}`)
+}
+
+async function notExistsByEmail(email) {
+    if (await User.exists({ email }))
+        throw new EmailAlreadyExists(email)
 }
 
 
 class UserService {
-    validator = new Validator()
-
     async create(user) {
-        const {email, psw, name, surname, patronymic, birthdate} = user
-        this.validator.email(email)
-        this.validator.psw(psw)
-        if (await User.exists({ email }))
-            throw new EmailAlreadyExists(email)
+        const { email, psw, name, surname, patronymic, birthdate } = user
+        validateEmail(email)
+        validatePsw(psw)
+        await notExistsByEmail(email)
         const createdUser = await User.create({
             psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT),
             email, name, surname, patronymic, birthdate,
             role: 'BASIC'
         })
-        delete createdUser.psw
-        delete createdUser.sessions
-        return createdUser
+        return _.omit(createdUser, hiddenFields)
     }
 
     async check(user) {
         const { email, psw } = user
-        this.validator.email(email)
-        this.validator.psw(psw)
+        validateEmail(email)
+        validatePsw(psw)
         const foundUser = await User.findOne({ email }).select('+psw').lean()
         if (!foundUser)
             throw new EmailNotExists(email)
         if (!bcrypt.compareSync(psw, foundUser.psw))
             throw new WrongPsw(psw)
-        delete foundUser.psw
-        return foundUser
+        return _.omit(foundUser, hiddenFields)
     }
 
     async changeEmail(userId, email) {
-        this.validator.email(email)
-        if (await User.exists({ email }))
-            throw new EmailAlreadyExists(email)
+        await existsById(userId)  // TODO: move checks to controller
+        validateEmail(email)
+        await notExistsByEmail(email)
         await User.updateOne(
             { _id: userId },
-            { email },
-            { runValidators: true})
+            { email })
     }
 
     async changePsw(userId, psw) {
-        this.validator.psw(psw)
+        validatePsw(psw)
+        await existsById(userId)
         await User.updateOne(
             { _id: userId },
-            { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) },
-            { runValidators: true})
+            { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) })
     }
 
     async changeInfo(userId, info) {
+        await existsById(userId)
         const { name, surname, patronymic, birthdate } = info
         await User.updateOne(
             { _id: userId },
             { name, surname, patronymic, birthdate },
-            { runValidators: true})
+            { runValidators: true })
     }
 
     async remove(userId) {

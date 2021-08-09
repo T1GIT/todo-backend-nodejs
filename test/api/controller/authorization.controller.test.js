@@ -32,12 +32,12 @@ describe("Authorization service", () => {
 
     describe("register", () => {
 
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe("can be done with", () => {
             describe("short info", () => {
 
-                afterEach(manager.clear)
+                afterEach(manager.clean)
 
                 it("doesn't throw", () => expect(
                     authorizationService.register({ ...profile.correct }, fingerprint)
@@ -68,7 +68,7 @@ describe("Authorization service", () => {
 
             describe("full info", () => {
 
-                afterEach(manager.clear)
+                afterEach(manager.clean)
 
                 it("doesn't throw", () => expect(
                     authorizationService.register(
@@ -132,7 +132,7 @@ describe("Authorization service", () => {
     describe("login", () => {
 
         beforeAll(async () => await authorizationService.register({ ...profile.correct }, fingerprint))
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
         describe("can be done", () => {
             it("without throwing", () => expect(
@@ -203,7 +203,7 @@ describe("Authorization service", () => {
 
         beforeAll(async () => res = await authorizationService.register({ ...profile.correct }, fingerprint))
         beforeEach(async () => res = await authorizationService.login({ ...profile.correct }, fingerprint))
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
         describe("does", () => {
 
@@ -239,7 +239,7 @@ describe("Authorization service", () => {
             let res
 
             beforeAll(async () => res = await authorizationService.register({ ...profile.correct }, fingerprint))
-            afterAll(manager.clear)
+            afterAll(manager.clean)
 
             it("register", () => expect(
                 authorizationService.logout(res.refresh)

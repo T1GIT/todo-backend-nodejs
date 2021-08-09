@@ -20,7 +20,7 @@ describe('Category service', () => {
     afterAll(manager.disconnect)
 
     beforeEach(async () => {
-        await manager.clear()
+        await manager.clean()
         user = await userService.create(form)
     })
 
@@ -62,6 +62,10 @@ describe('Category service', () => {
         const categoryIds = []
         for (let i = 0; i < amount; i++)
             categoryIds.push(await categoryService.create(user._id, category))
+
+        await expect(
+            categoryService.getByUser(user._id)
+        ).resolves.toHaveLength(amount)
 
         for (let categoryId of categoryIds)
             await categoryService.remove(categoryId)

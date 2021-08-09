@@ -13,11 +13,11 @@ class SessionCleaner {
         )
     }
 
-    async overflow(user) {
-        const sessions = (await User.findById(user).select('+sessions')).sessions
+    async overflow(userId) {
+        const sessions = (await User.findById(userId).select('+sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {
             await User.updateOne(
-                { _id: user._id },
+                { _id: userId },
                 { $set: { sessions: sessions.slice(sessions.length - config.MAX_SESSIONS) } }
             )
         }

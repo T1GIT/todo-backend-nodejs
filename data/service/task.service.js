@@ -23,7 +23,10 @@ class TaskService {
         const { title, description } = task
         await Category.updateOne(
             { 'tasks._id': taskId },
-            { title, description },
+            {
+                'tasks.$.title': title,
+                'tasks.$.description': description
+            },
             { runValidators: true }
         )
     }

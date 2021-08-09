@@ -25,7 +25,7 @@ describe("User service", () => {
     afterAll(manager.disconnect)
 
     describe("create", () => {
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe("can be done with", () => {
             describe("short info", () => {
@@ -88,10 +88,10 @@ describe("User service", () => {
         const formWithInfo = { ...form, ...info }
 
         beforeAll(async () => {
-            await manager.clear()
+            await manager.clean()
             await userService.create(formWithInfo);
         })
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
         describe("can be done", () => {
             it("without throwing", () => expect(
@@ -143,10 +143,10 @@ describe("User service", () => {
         let userId
 
         beforeEach(async () => {
-            await manager.clear()
+            await manager.clean()
             userId = (await userService.create(form))._id;
         })
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
         describe("with valid email", () => {
             const anotherEmail = 'another' + form.email
@@ -188,10 +188,10 @@ describe("User service", () => {
         let userId
 
         beforeEach(async () => {
-            await manager.clear()
+            await manager.clean()
             userId = (await userService.create(form))._id;
         })
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
         describe("with valid password", () => {
             const anotherPsw = 'another' + form.psw
@@ -224,10 +224,10 @@ describe("User service", () => {
         let userId
 
         beforeEach(async () => {
-            await manager.clear()
+            await manager.clean()
             userId = (await userService.create(form))._id;
         })
-        afterAll(manager.clear)
+        afterAll(manager.clean)
 
 
         describe("with valid info", () => {
@@ -279,7 +279,7 @@ describe("User service", () => {
         let user
 
         beforeEach(async () => user = await userService.create(form))
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe("doesn't throw", () => {
             it("if user have existed before", () => expect(
@@ -303,7 +303,7 @@ describe("User service", () => {
             for (let i = 0; i < amount; i++) {
                 category = await Category.create({ name: 'name' + i })
                 await User.findByIdAndUpdate(
-                    user,
+                    { _id: user._id },
                     { $push: { categories: category } }
                 )
             }

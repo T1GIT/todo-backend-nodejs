@@ -27,7 +27,7 @@ describe('Task service', () => {
     afterAll(manager.disconnect)
 
     beforeEach(async () => {
-        await manager.clear()
+        await manager.clean()
         user = await userService.create(form)
         categoryId = await categoryService.create(user._id, category)
     })
@@ -69,17 +69,21 @@ describe('Task service', () => {
         ).resolves.toBeTruthy()
     })
 
-    it('removes category', async () => {
+    it('removes task', async () => {
         const amount = 5
-        const categoryIds = []
+        const taskIds = []
         for (let i = 0; i < amount; i++)
-            categoryIds.push(await categoryService.create(user._id, category))
-
-        for (let categoryId of categoryIds)
-            await categoryService.remove(categoryId)
+            taskIds.push(await taskService.create(categoryId, task))
 
         await expect(
-            categoryService.getByUser(user._id)
+            taskService.getByCategory(categoryId)
+        ).resolves.toHaveLength(amount)
+
+        for (let taskId of taskIds)
+            await taskService.remove(taskId)
+
+        await expect(
+            taskService.getByCategory(categoryId)
         ).resolves.toHaveLength(0)
     })
 })

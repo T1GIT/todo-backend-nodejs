@@ -21,7 +21,7 @@ describe("Session service", () => {
         let user
 
         beforeEach(async () => user = await userService.create(form))
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe('can be done', () => {
             it('without throwing', () => expect(
@@ -47,7 +47,7 @@ describe("Session service", () => {
             user = await userService.create(form)
             refresh = await sessionService.create(user, fingerprint)
         })
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe('works', () => {
             it('without throwing', () => expect(
@@ -74,7 +74,7 @@ describe("Session service", () => {
             user = await userService.create(form)
             refresh = await sessionService.create(user, fingerprint)
         })
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe('works correctly', () => {
             describe('if it got', () => {
@@ -115,7 +115,7 @@ describe("Session service", () => {
         let user
 
         beforeEach(async () => user = await userService.create(form))
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe('works correctly with', () => {
             it('normal session', async () => {
@@ -143,7 +143,7 @@ describe("Session service", () => {
         let user
 
         beforeEach(async () => user = await userService.create(form))
-        afterEach(manager.clear)
+        afterEach(manager.clean)
 
         describe('works with', () => {
             it('repeated fingerprint in different sessions', async () => {
@@ -160,9 +160,9 @@ describe("Session service", () => {
                 const amount = MAX_SESSIONS + 5
                 for (let i = 0; i < amount; i++)
                     await sessionService.create(user, fingerprint + i)
-                await sessionService.clean.overflow(user)
+                await sessionService.clean.overflow(user._id)
                 expect(
-                    (await User.findById(user).select('sessions')).sessions
+                    (await User.findById(user._id).select('sessions')).sessions
                 ).toHaveLength(MAX_SESSIONS)
             })
 
@@ -170,12 +170,12 @@ describe("Session service", () => {
                 const amount = 5
                 for (let i = 0; i < amount; i++)
                     await sessionService.create(user, fingerprint + i)
-                await User.findByIdAndUpdate(
-                    user,
+                await User.updateOne(
+                    { _id: user._id },
                     { $set: { 'sessions.$[].expires': new Date(0) } })
                 await sessionService.clean.outdated()
                 expect(
-                    (await User.findById(user).select('sessions')).sessions
+                    (await User.findById(user._id).select('sessions')).sessions
                 ).toHaveLength(0)
             })
         })
