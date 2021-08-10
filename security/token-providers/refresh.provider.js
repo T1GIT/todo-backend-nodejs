@@ -2,22 +2,27 @@ const env = require('../../environment')
 const { EXPIRE_PERIOD } = require('../config')
 
 
+const options = {
+    domain: `${env.HOST}:${env.PORT}`,
+    path: `${env.CONTEXT_PATH}/authorization`,
+    maxAge: EXPIRE_PERIOD.REFRESH * 24 * 3600 * 1000,
+    httpOnly: true,
+    sameSite: 'strict',
+    signed: true
+}
+
+
 class RefreshProvider {
-
-    static options = {
-        domain: `${env.HOST}:${env.PORT}`,
-        path: `${env.CONTEXT_PATH}/authorization`, // TODO: Add variable to root path for every router
-        maxAge: EXPIRE_PERIOD.REFRESH,
-        httpOnly: true,
-        signed: true
-    }
-
     attach(refresh, res) {
-        res.cookie('refresh', refresh, RefreshProvider.options)
+        res.cookie('refresh', refresh, options)
     }
 
     extract(req) {
-        return req.cookies.refresh
+        return req.signedCookies.refresh
+    }
+
+    clean(res) {
+        res.clearCookie('refresh')
     }
 }
 

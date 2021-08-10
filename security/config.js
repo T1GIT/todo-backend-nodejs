@@ -5,7 +5,7 @@ module.exports = {
         COOKIE: 40,
         SALT: 12
     },
-    EXPIRE_PERIOD: {
+    EXPIRE_PERIOD: { // TODO: May transform to config.json
         JWT: 10, // minutes
         REFRESH: 60 // days
     }

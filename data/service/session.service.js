@@ -3,16 +3,10 @@ const { KEY_LENGTH } = require("../../security/config");
 const User = require("../model/User.model")
 const { nanoid } = require("nanoid");
 const config = require("../config")
+const { SessionError } = require("../../util/http-error");
 
 
 class SessionCleaner {
-    async fingerprint(userId, fingerprint) {
-        await User.updateOne(
-            { _id: userId, 'sessions.fingerprint': fingerprint },
-            { $pull: { sessions: { fingerprint } } }
-        )
-    }
-
     async overflow(userId) {
         const sessions = (await User.findById(userId).select('+sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {
@@ -38,39 +32,44 @@ class SessionService {
     async create(userId, fingerprint) {
         const refresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
-        const session = {
-            expires: date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH),
-            refresh, fingerprint
-        }
         await User.updateOne(
             { _id: userId },
-            { $push: { sessions: session } },
+            {
+                $push: {
+                    sessions: {
+                        expires: date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH),
+                        refresh, fingerprint
+                    }
+                }
+            },
             { runValidators: true }
         )
         return refresh
     }
 
     async update(refresh, fingerprint) {
-        const newRefresh = nanoid(KEY_LENGTH.REFRESH)
+        const user = await User
+            .findOne({ 'sessions.refresh': refresh })
+            .select({ sessions: { $elemMatch: { refresh } } })
+        if (!user)
+            throw new SessionError("Can't find session with refresh " + refresh)
+        const session = user.sessions[0]
+        if (session.fingerprint !== fingerprint)
+            throw new SessionError(`Fingerprint ${ fingerprint } is invalid`)
+        if (session.expires < new Date())
+            throw new SessionError('Session is expired')
+        refresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
         await User.updateOne(
-            { 'sessions.refresh': refresh, 'sessions.fingerprint': fingerprint },
+            { 'sessions._id': session._id },
             {
                 $set: {
-                    'sessions.$.refresh': newRefresh,
+                    'sessions.$.refresh': refresh,
                     'sessions.$.expires': date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH)
                 }
             },
             { runValidators: true })
-        return newRefresh
-    }
-
-    async existsActive(refresh, fingerprint) {
-        return await User.exists({
-            'sessions.expires': { $gt: new Date() },
-            'sessions.refresh': refresh,
-            'sessions.fingerprint': fingerprint
-        })
+        return { user, refresh }
     }
 
     async remove(refresh, fingerprint) {

@@ -7,30 +7,42 @@ const { NotFound, WrongPsw, EmailNotExists, EmailAlreadyExists, InvalidEmail, In
 const _ = require('lodash')
 
 
+const pswRegExp = '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'
 const hiddenFields = ['psw', 'sessions', 'categories']
+
+function validateEmail(email) {
+    if (!validator.isEmail(email))
+        throw new InvalidEmail(email)
+}
+
+function validatePsw(psw) {
+    if (!validator.matches(psw, pswRegExp))
+        throw new InvalidPsw(psw)
+}
+
+async function notExistsByEmail(email) {
+    if (await User.exists({ email }))
+        throw new EmailAlreadyExists(email)
+}
 
 
 class UserService {
-    async existsById(userId) {
-        return await User.exists({ _id: userId })
-    }
-
-    async existsByEmail(email) {
-        return await User.exists({ email })
-    }
-
     async create(user) {
         const { email, psw, name, surname, patronymic, birthdate } = user
+        validateEmail(email)
+        validatePsw(psw)
+        await notExistsByEmail(email)
         const createdUser = await User.create({
             psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT),
-            email, name, surname, patronymic, birthdate,
-            role: 'BASIC'
+            email, name, surname, patronymic, birthdate
         })
         return _.omit(createdUser.toObject(), ...hiddenFields)
     }
 
     async check(user) {
         const { email, psw } = user
+        validateEmail(email)
+        validatePsw(psw)
         const foundUser = await User.findOne({ email }).select('+psw').lean()
         if (!foundUser)
             throw new EmailNotExists(email)
@@ -40,12 +52,15 @@ class UserService {
     }
 
     async changeEmail(userId, email) {
+        validateEmail(email)
+        await notExistsByEmail(email)
         await User.updateOne(
             { _id: userId },
             { email })
     }
 
     async changePsw(userId, psw) {
+        validatePsw(psw)
         await User.updateOne(
             { _id: userId },
             { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) })

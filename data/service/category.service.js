@@ -37,7 +37,6 @@ class CategoryService {
             { 'categories._id': categoryId },
             { $pull: { categories: { _id: categoryId } } }
         )
-
     }
 }
 

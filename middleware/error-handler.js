@@ -3,19 +3,20 @@ const env = require('../environment')
 
 
 const errorHandler = async (err, req, res, next) => {
-    const body = {}
-    body.error = err.name
-    body.message = err.message
-    body.code = err instanceof HttpError
+    const error = {}
+    error.message = err.message
+    error.code = err instanceof HttpError
         ? err.code
         : err.name === 'ValidationError'
             ? 400
             : 500
     if (env.NODE_ENV !== 'production')
-        body.trace = err.stack
-
-    console.log(err, req, res, next)
-    res.status(body.code).send(body)
+        error.trace = err.stack
+    res.status(error.code).send(error)
+    next(err)
 }
+
+
+
 
 module.exports = errorHandler

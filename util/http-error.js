@@ -36,9 +36,9 @@ module.exports = {
             super(401, `${ psw } is wrong`);
         }
     },
-    NoActiveSessions: class extends HttpError {
-        constructor() {
-            super(401, "can not find given session");
+    SessionError: class extends HttpError {
+        constructor(msg) {
+            super(401, msg);
         }
     },
     JwtError: class extends HttpError {
@@ -49,6 +49,7 @@ module.exports = {
     BadRequest: class extends HttpError {
         constructor(msg) {
             super(400, msg);
+            this.name = this.constructor.name
         }
     },
     HttpError,

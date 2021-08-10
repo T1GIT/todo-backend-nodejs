@@ -20,21 +20,18 @@ module.exports = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
-        minlength: 1,
         maxlength: 50,
         validate: /^[a-zA-Zа-яА-Я]*$/,
     },
     surname: {
         type: String,
         trim: true,
-        minlength: 1,
         maxlength: 50,
         validate: /^[a-zA-Zа-яА-Я]*$/
     },
     patronymic: {
         type: String,
         trim: true,
-        minlength: 1,
         maxlength: 50,
         validate: /^[a-zA-Zа-яА-Я]*$/,
     },

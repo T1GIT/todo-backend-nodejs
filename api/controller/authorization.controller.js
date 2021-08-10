@@ -1,76 +1,49 @@
 const sessionService = require('../../data/service/session.service')
 const userService = require('../../data/service/user.service')
-const AbstractController = require("../../util/AbstractController");
-const { InvalidEmail, InvalidPsw } = require("../../util/http-error");
-const { NoActiveSessions, NotFound, EmailAlreadyExists, BadRequest, EmailNotExists } = require("../../util/http-error");
+const { SessionError, NotFound, EmailAlreadyExists, BadRequest,
+    EmailNotExists, JwtError, InvalidEmail, InvalidPsw } = require("../../util/http-error");
 const jwtProvider = require('../../security/token-providers/jwt.prowider')
 const refreshProvider = require('../../security/token-providers/refresh.provider')
 const _ = require('lodash')
 
 
-const pswRegExp = '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'
 
-function validateEmail(email) {
-    if (!validator.isEmail(email))
-        throw new InvalidEmail(email)
-}
 
-function validatePsw(psw) {
-    if (!validator.matches(psw, pswRegExp))
-        throw new InvalidPsw(psw)
-}
-
-async function checkIdExists(userId) {
-    if (!await userService.existsById(userId))
-        throw new NotFound(`user with id ${userId}`)
-}
-
-async function checkEmailExists(email) {
-    if (!await userService.existsByEmail(email))
-        throw new EmailAlreadyExists(email)
-}
-
-async function checkEmailNotExists(email) {
-    if (await userService.existsByEmail(email))
-        throw new EmailAlreadyExists(email)
-}
-
-class AuthorizationController extends AbstractController {
+class AuthorizationController {
     async register(req, res) {
-        AbstractController.checkFields(req, 'request', ['body'])
-        const { body } = req
-        AbstractController.checkFields(body, 'body', ['user', 'fingerprint'])
-        const { user, fingerprint } = body
-        AbstractController.checkFields(user, 'user', ['email', 'psw'])
-        const { email } = user
-        await checkEmailNotExists(email)
+        const { user, fingerprint } = req.body
         const createdUser = await userService.create(user)
-        console.log(createdUser)
-        const refresh = await sessionService.create(createdUser, fingerprint)
-        const jwt = await jwtProvider.create(createdUser)
+        const refresh = await sessionService.create(createdUser._id, fingerprint)
         refreshProvider.attach(refresh, res)
-        res.status(201).send(_.omit(createdUser, 'psw'))
+        const jwt = await jwtProvider.create(createdUser)
+        res.status(201).send({ jwt })
     }
 
-    async login(user, fingerprint) {
-        user = await userService.check(user)
-        await sessionService.clean.fingerprint(user, fingerprint)
-        const refresh = await sessionService.create(user, fingerprint)
-        await sessionService.clean.overflow(user)
-        return { user, refresh }
+    async login(req, res) {
+        const { user, fingerprint } = req.body
+        const foundUser = await userService.check(user)
+        const refresh = await sessionService.create(foundUser._id, fingerprint)
+        refreshProvider.attach(refresh, res)
+        const jwt = await jwtProvider.create(foundUser)
+        res.status(200).send({ jwt })
     }
 
-    async refresh(refresh, fingerprint) {
-        if (! await sessionService.existsActive(refresh, fingerprint)) {
-            await sessionService.clean.outdated()
-            await sessionService.remove(refresh, fingerprint)
-            throw new NoActiveSessions()
-        }
-        return sessionService.update(refresh)
+    async refresh(req, res) {
+        const refresh = refreshProvider.extract(req)
+        if (!refresh)
+            throw new SessionError("refresh token not found in cookies")
+        const { fingerprint } = req.body
+        const { refresh: newRefresh, user } = sessionService.update(refresh, fingerprint)
+        refreshProvider.attach(newRefresh, res)
+        const jwt = jwtProvider.create(user)
+        res.status(200).send({ jwt })
     }
 
-    async logout(refresh) {
+    async logout(req, res) {
+        const refresh = refreshProvider.extract(req)
         await sessionService.remove(refresh)
+        refreshProvider.clean(res)
+        res.sendStatus(204)
     }
 }
 

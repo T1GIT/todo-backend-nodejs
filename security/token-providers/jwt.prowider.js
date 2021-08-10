@@ -7,11 +7,7 @@ const { KEY_LENGTH, EXPIRE_PERIOD } = require('../config')
 
 
 class JwtProvider {
-    secret
-
-    constructor() {
-        this.updateKey()
-    }
+    secret = nanoid(KEY_LENGTH.JWT)
 
     updateKey() {
         this.secret = nanoid(KEY_LENGTH.JWT)
@@ -22,19 +18,18 @@ class JwtProvider {
             return await jsonwebtoken.sign(
                 { payload: user },
                 this.secret,
-                { expiresIn: EXPIRE_PERIOD.JWT })
+                { expiresIn: EXPIRE_PERIOD.JWT * 60 })
         } catch (e) {
             throw new JwtError(`(${e.name}) ${e.message}`)
         }
     }
 
     parse(jwt) {
-
         try {
             return jsonwebtoken.verify(
                 jwt,
                 this.secret,
-                { maxAge: EXPIRE_PERIOD.JWT }
+                { maxAge: EXPIRE_PERIOD.JWT * 60 }
             );
         } catch (e) {
             throw new JwtError(`(${e.name}) ${e.message}`)
@@ -42,7 +37,10 @@ class JwtProvider {
     }
 
     extract(req) {
-        return req.header('authorization').replace('Bearer ', '')
+        const authorization = req.header('authorization')
+        if (!authorization)
+            throw new JwtError("can't find bearer authorization token")
+        return this.parse(authorization.slice(7))
     }
 }
 

@@ -69,6 +69,19 @@ describe('Task service', () => {
         ).resolves.toBeTruthy()
     })
 
+    it('updates task completed', async () => {
+        const taskId = await taskService.create(categoryId, task)
+
+        await taskService.updateCompleted(taskId, true)
+
+        const foundTask = (await Category
+            .findById(categoryId)
+            .select({ tasks: {$elemMatch: {_id: taskId}} })).tasks[0]
+
+        expect(foundTask.completed).toBeTruthy()
+        expect(foundTask.executeDate).toBeDefined()
+    })
+
     it('removes task', async () => {
         const amount = 5
         const taskIds = []

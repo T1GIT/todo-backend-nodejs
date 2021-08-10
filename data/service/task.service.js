@@ -35,8 +35,8 @@ class TaskService {
         await Category.updateOne(
             { 'tasks._id': taskId },
             {
-                completed,
-                executeDate: completed
+                'tasks.$.completed': completed,
+                'tasks.$.executeDate': completed
                     ? new Date()
                     : null
             },
