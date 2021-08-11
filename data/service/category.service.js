@@ -1,6 +1,6 @@
 const User = require('../model/User.model')
 const Category = require('../model/Category.model')
-const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
+const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../api/util/http-error")
 
 
 class CategoryService {

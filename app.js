@@ -1,20 +1,17 @@
 const express = require('express')
-const manager = require('./data/manager/memory.manager')
-const { bodyParser, cookieParser, corsConfig, errorHandler } = require('./middleware')
+const manager = require('./data/manager/cloud.manager')
+const { bodyParser, cookieParser, corsConfig } = require('./middleware')
 const router = require('./api/router')
 const env = require('./environment')
 
 
 const app = express()
 
-// Pre-request middleware
-app.use(cookieParser, bodyParser)
+// Middleware
+app.use(cookieParser, bodyParser, corsConfig)
 
 // Routes
 app.use(env.CONTEXT_PATH, router)
-
-// Post-request middleware
-app.use(corsConfig, errorHandler)
 
 // Run
 async function start() {
@@ -23,9 +20,6 @@ async function start() {
         console.log('Database is connected')
         await app.listen(env.PORT, env.HOST)
         console.log(`Server is listening on address http://${ env.HOST }:${ env.PORT }`)
-
-        // await require('./quick-test')()
-
     } catch (e) {
         console.error(e)
     }

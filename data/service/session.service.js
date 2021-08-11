@@ -3,7 +3,7 @@ const { KEY_LENGTH } = require("../../security/config");
 const User = require("../model/User.model")
 const { nanoid } = require("nanoid");
 const config = require("../config")
-const { SessionError } = require("../../util/http-error");
+const { SessionError } = require("../../api/util/http-error");
 
 
 class SessionCleaner {
@@ -58,9 +58,9 @@ class SessionService {
             throw new SessionError(`Fingerprint ${ fingerprint } is invalid`)
         if (session.expires < new Date())
             throw new SessionError('Session is expired')
-        refresh = nanoid(KEY_LENGTH.REFRESH)
+        const newRefresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
-        await User.updateOne(
+        const foundUser = await User.findOneAndUpdate(
             { 'sessions._id': session._id },
             {
                 $set: {
@@ -69,7 +69,7 @@ class SessionService {
                 }
             },
             { runValidators: true })
-        return { user, refresh }
+        return { user: foundUser, refresh: newRefresh }
     }
 
     async remove(refresh, fingerprint) {

@@ -1,7 +1,6 @@
 module.exports = {
-    corsConfig: require('./cors-config'),
+    corsConfig: require('./plugins/cors-config'),
     authorization: require('./authorization'),
-    errorHandler: require('./error-handler'),
-    bodyParser: require('./body-parser'),
-    cookieParser: require('./cookie-parser')
+    bodyParser: require('./plugins/body-parser'),
+    cookieParser: require('./plugins/cookie-parser')
 }

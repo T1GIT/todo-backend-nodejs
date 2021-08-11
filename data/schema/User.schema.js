@@ -8,9 +8,6 @@ module.exports = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        minlength: 7,
-        maxlength: 255,
-        lowercase: true,
     },
     psw: {
         type: String,
@@ -20,25 +17,16 @@ module.exports = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
     surname: {
         type: String,
         trim: true,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/
     },
     patronymic: {
         type: String,
         trim: true,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
-    birthdate: {
-        type: Date,
-        validate: birthdate => birthdate < new Date()
-    },
+    birthdate: Date,
     role: {
         type: String,
         required: true,

@@ -21,7 +21,7 @@ class RefreshProvider {
         return req.signedCookies.refresh
     }
 
-    clean(res) {
+    erase(res) {
         res.clearCookie('refresh')
     }
 }
