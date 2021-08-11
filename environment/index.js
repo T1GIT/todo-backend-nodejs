@@ -5,20 +5,29 @@ let path
 
 switch (NODE_ENV) {
     case 'production':
-        path = '.env.production'; break
+        path = '.env.production';
+        break
     case 'test':
-        path = '.env.test'; break
+        path = '.env.test';
+        break
     default:
-        path = '.env'; break
+        path = '.env';
+        break
 }
 
 dotenv.config({ path })
 
-const {HOST, PORT, DB_NAME, DB_USERNAME, DB_PASSWORD, ACCEPT_ORIGIN, CONTEXT_PATH } = process.env
+const {
+    HOST, PORT,
+    DB_NAME, DB_USERNAME, DB_PASSWORD,
+    JWT_SECRET, COOKIE_SECRET,
+    ACCEPT_ORIGIN,
+    CONTEXT_PATH } = process.env
 
 module.exports = {
     NODE_ENV,
     HOST, PORT, CONTEXT_PATH,
+    JWT_SECRET, COOKIE_SECRET,
     DB_NAME, DB_USERNAME, DB_PASSWORD,
     ACCEPT_ORIGIN
 }

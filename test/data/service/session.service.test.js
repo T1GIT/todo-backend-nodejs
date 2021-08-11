@@ -51,11 +51,11 @@ describe("Session service", () => {
 
         describe('works', () => {
             it('without throwing', () => expect(
-                sessionService.update(refresh, fingerprint)
+                sessionService.refresh(refresh, fingerprint)
             ).resolves.not.toThrow())
 
             it('and changes only current session', async () => {
-                const newRefresh = (await sessionService.update(refresh, fingerprint)).refresh
+                const newRefresh = (await sessionService.refresh(refresh, fingerprint)).refresh
                 await expect(
                     User.exists({'sessions.refresh': refresh, 'sessions.fingerprint': fingerprint})
                 ).resolves.toBeFalsy()

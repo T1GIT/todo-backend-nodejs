@@ -1,8 +1,8 @@
 const { body, cookie } = require('express-validator');
 
+
 const regExp = {
     fingerprint: /^[a-zA-Z0-9]*$/,
-    letters: /^[a-zA-Zа-яА-Я]*$/,
     psw: /^.*(?=.*[a-zA-Zа-яА-Я])(?=.*\d).*$/
 }
 
@@ -12,7 +12,7 @@ const validators = {
         body('user').exists(),
         body('user.email').exists().isEmail().normalizeEmail().isLength({ min: 5, max: 255 }),
         body('user.psw').exists().isString().isLength({ min: 8, max: 255 }).matches(regExp.psw)
-    ]
+    ],
 }
 
 class AuthorizationValidator {

@@ -34,17 +34,12 @@ module.exports = new mongoose.Schema({
         enum: ['ADMIN', 'BASIC'],
         default: 'BASIC'
     },
-    sessions:{
+    sessions: {
         type: [SessionSchema],
         select: false
     },
     categories: {
-        type: [
-            {
-                type: mongoose.Types.ObjectId,
-                ref: 'Category'
-            }
-        ],
+        type: [{ type: mongoose.Types.ObjectId, ref: 'Category' }],
         select: false
-    }
-}, {versionKey: false})
+    },
+}, { versionKey: false })

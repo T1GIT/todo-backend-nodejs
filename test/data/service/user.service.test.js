@@ -69,7 +69,7 @@ describe("User service", () => {
         })
     })
 
-    describe("checkAndGet", () => {
+    describe("check", () => {
         const formWithInfo = { ...form, ...info }
 
         beforeAll(async () => {
@@ -78,18 +78,9 @@ describe("User service", () => {
         })
         afterAll(manager.clean)
 
-        describe("can be done", () => {
-            it("without throwing", () => expect(
-                userService.check(form)
-            ).resolves.not.toThrow())
-
-            it("and returns valid user", async () => {
-                const user = await userService.check(formWithInfo)
-                const props = _.without(_.keys(formWithInfo), 'psw')
-                expect(user).toBeDefined()
-                expect(_.pick(user, ...props)).toEqual(_.pick(formWithInfo, ...props))
-            })
-        })
+        it("doesn't throw", () => expect(
+            userService.check(form)
+        ).resolves.not.toThrow())
 
         describe("can not be done", () => {
             describe("if form contains invalid", () => {
@@ -215,27 +206,6 @@ describe("User service", () => {
                 await expect(
                     User.exists({ _id: userId, ..._.without(form, 'psw'), ...info })
                 ).resolves.toBeTruthy()
-            })
-        })
-
-        describe("fails with invalid", () => {
-            it("name", () => expect(
-                userService.changeInfo(userId, { name: '123' })
-            ).rejects.toThrow())
-
-            it("surname", () => expect(
-                userService.changeInfo(userId, { surname: '123' })
-            ).rejects.toThrow())
-
-            it("patronymic", () => expect(
-                userService.changeInfo(userId, { patronymic: '123' })
-            ).rejects.toThrow())
-
-            it("birthdate", async () => {
-                const date = new Date()
-                await expect(
-                    userService.changeInfo(userId, { birthdate: date.setDate(date.getDate() + 1) })
-                ).rejects.toThrow()
             })
         })
 

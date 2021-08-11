@@ -1,32 +1,29 @@
 const User = require('../model/User.model')
 const Category = require('../model/Category.model')
-const bcrypt = require("bcrypt");
-const validator = require('validator').default
-const { KEY_LENGTH } = require("../../security/config");
-const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../api/util/http-error")
-const _ = require('lodash')
+const hashProvider = require('../../security/provider/hash.provider')
+const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
 
 
 class UserService {
-    async create(user) {
-        const { email, psw, name, surname, patronymic, birthdate } = user
-        if (await User.exists({ email }))
-            throw new EmailAlreadyExists(email)
-        const createdUser = await User.create({
-            psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT),
-            email, name, surname, patronymic, birthdate
-        })
-        return _.omit(createdUser.toObject(), 'psw', 'sessions', 'categories')
+    async getById(userId) {
+        return User.findById(userId).lean()
     }
 
-    async check(user) {
-        const { email, psw } = user
-        const foundUser = await User.findOne({ email }).select('+psw').lean()
-        if (!foundUser)
+    async create({ email, psw, name, surname, patronymic, birthdate }) {
+        const user = await User.create({
+            psw: await hashProvider.create(psw),
+            email, name, surname, patronymic, birthdate
+        })
+        return user._id
+    }
+
+    async check({email, psw}) {
+        const user = await User.findOne({ email }).select('psw').lean()
+        if (!user)
             throw new EmailNotExists(email)
-        if (!bcrypt.compareSync(psw, foundUser.psw))
+        if (!await hashProvider.check(psw, user.psw))
             throw new WrongPsw(psw)
-        return _.omit(foundUser, 'psw')
+        return user._id
     }
 
     async changeEmail(userId, email) {
@@ -34,17 +31,16 @@ class UserService {
             throw new EmailAlreadyExists(email)
         await User.updateOne(
             { _id: userId },
-            { email })
+            { email });
     }
 
     async changePsw(userId, psw) {
         await User.updateOne(
             { _id: userId },
-            { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) })
+            { psw: await hashProvider.create(psw) })
     }
 
-    async changeInfo(userId, info) {
-        const { name, surname, patronymic, birthdate } = info
+    async changeInfo(userId, { name, surname, patronymic, birthdate }) {
         await User.updateOne(
             { _id: userId },
             { name, surname, patronymic, birthdate },
@@ -52,9 +48,9 @@ class UserService {
     }
 
     async remove(userId) {
-        const removedUser = await User.findByIdAndDelete(userId).select('categories')
-        if (removedUser)
-            await Category.deleteMany({ _id: { $in: removedUser.categories } })
+        const user = await User.findByIdAndDelete(userId).select('categories')
+        if (user)
+            await Category.deleteMany({ _id: { $in: user.categories } })
     }
 }
 

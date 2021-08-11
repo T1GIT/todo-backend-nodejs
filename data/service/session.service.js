@@ -3,12 +3,12 @@ const { KEY_LENGTH } = require("../../security/config");
 const User = require("../model/User.model")
 const { nanoid } = require("nanoid");
 const config = require("../config")
-const { SessionError } = require("../../api/util/http-error");
+const { SessionError } = require("../../util/http-error");
 
 
 class SessionCleaner {
     async overflow(userId) {
-        const sessions = (await User.findById(userId).select('+sessions')).sessions
+        const sessions = (await User.findById(userId).select('sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {
             await User.updateOne(
                 { _id: userId },
@@ -47,7 +47,7 @@ class SessionService {
         return refresh
     }
 
-    async update(refresh, fingerprint) {
+    async refresh(refresh, fingerprint) {
         const user = await User
             .findOne({ 'sessions.refresh': refresh })
             .select({ sessions: { $elemMatch: { refresh } } })
@@ -60,16 +60,19 @@ class SessionService {
             throw new SessionError('Session is expired')
         const newRefresh = nanoid(KEY_LENGTH.REFRESH)
         const date = new Date()
-        const foundUser = await User.findOneAndUpdate(
+        const updatedUser = await User.findOneAndUpdate(
             { 'sessions._id': session._id },
             {
                 $set: {
-                    'sessions.$.refresh': refresh,
+                    'sessions.$.refresh': newRefresh,
                     'sessions.$.expires': date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH)
                 }
             },
-            { runValidators: true })
-        return { user: foundUser, refresh: newRefresh }
+            { runValidators: true }).select('_id').lean()
+        return {
+            refresh: newRefresh,
+            userId: updatedUser._id
+        }
     }
 
     async remove(refresh, fingerprint) {

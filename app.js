@@ -1,17 +1,24 @@
 const express = require('express')
 const manager = require('./data/manager/cloud.manager')
-const { bodyParser, cookieParser, corsConfig } = require('./middleware')
+const bodyParser = require('./middleware/plugins/body-parser.plugin')
+const corsConfig = require('./middleware/plugins/cors.plugin')
+const cookieParser = require('./middleware/plugins/cookie-parser.plugin')
+const errorHandler = require('./middleware/plugins/error-handler.plugin')
+const errorHandlerFilter = require('./middleware/filter/error-handler.filter')
 const router = require('./api/router')
 const env = require('./environment')
 
 
 const app = express()
 
-// Middleware
+// Plugins
 app.use(cookieParser, bodyParser, corsConfig)
 
 // Routes
 app.use(env.CONTEXT_PATH, router)
+
+// Error handler
+app.use(errorHandler)
 
 // Run
 async function start() {
