@@ -1,14 +1,33 @@
+const dotenv = require('dotenv')
 const { NODE_ENV } = process.env
 
-require('dotenv').config({
-    path: NODE_ENV === 'production' ? './.env.production' : './.env'
-})
+let path
 
-const {HOST, PORT, DB_NAME, DB_USERNAME, DB_PASSWORD, ACCEPT_ORIGIN, CONTEXT_PATH } = process.env
+switch (NODE_ENV) {
+    case 'production':
+        path = '.env.production';
+        break
+    case 'test':
+        path = '.env.test';
+        break
+    default:
+        path = '.env';
+        break
+}
+
+dotenv.config({ path })
+
+const {
+    HOST, PORT,
+    DB_NAME, DB_USERNAME, DB_PASSWORD,
+    JWT_SECRET, COOKIE_SECRET,
+    ACCEPT_ORIGIN,
+    VERSION } = process.env
 
 module.exports = {
     NODE_ENV,
-    HOST, PORT, CONTEXT_PATH,
+    HOST, PORT, VERSION,
+    JWT_SECRET, COOKIE_SECRET,
     DB_NAME, DB_USERNAME, DB_PASSWORD,
     ACCEPT_ORIGIN
 }

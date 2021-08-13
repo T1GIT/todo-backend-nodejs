@@ -18,4 +18,4 @@ module.exports = new mongoose.Schema({
         required: true,
         unique: true
     }
-})
+}, {versionKey: false})

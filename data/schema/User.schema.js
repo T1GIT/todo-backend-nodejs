@@ -8,9 +8,7 @@ module.exports = new mongoose.Schema({
         type: String,
         required: true,
         unique: true,
-        minlength: 7,
-        maxlength: 255,
-        lowercase: true,
+        lowercase: true
     },
     psw: {
         type: String,
@@ -20,45 +18,29 @@ module.exports = new mongoose.Schema({
     name: {
         type: String,
         trim: true,
-        minlength: 1,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
     surname: {
         type: String,
         trim: true,
-        minlength: 1,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/
     },
     patronymic: {
         type: String,
         trim: true,
-        minlength: 1,
-        maxlength: 50,
-        validate: /^[a-zA-Zа-яА-Я]*$/,
     },
-    birthdate: {
-        type: Date,
-        validate: birthdate => birthdate < new Date()
-    },
+    birthdate: Date,
     role: {
         type: String,
         required: true,
         enum: ['ADMIN', 'BASIC'],
-        default: 'BASIC'
+        default: 'BASIC',
+        select: false
     },
-    sessions:{
+    sessions: {
         type: [SessionSchema],
         select: false
     },
     categories: {
-        type: [
-            {
-                type: mongoose.Types.ObjectId,
-                ref: 'Category'
-            }
-        ],
+        type: [{ type: mongoose.Types.ObjectId, ref: 'Category' }],
         select: false
-    }
-})
+    },
+}, { versionKey: false })

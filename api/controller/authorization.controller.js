@@ -1,34 +1,46 @@
 const sessionService = require('../../data/service/session.service')
 const userService = require('../../data/service/user.service')
-const { NoActiveSessions } = require("../../util/http-error");
+const jwtProvider = require('../../security/provider/jwt.provider')
+const refreshProvider = require('../../security/provider/refresh.provider')
+const _ = require('lodash')
 
 
-async function register(user, fingerprint) {
-    user = await userService.create(user)
-    const refresh = await sessionService.create(user, fingerprint)
-    return { user, refresh }
-}
-
-async function login(user, fingerprint) {
-    user = await userService.checkAndGet(user)
-    await sessionService.clean.fingerprint(user, fingerprint)
-    const refresh = await sessionService.create(user, fingerprint)
-    await sessionService.clean.overflow(user)
-    return { user, refresh }
-}
-
-async function refresh(refresh, fingerprint) {
-    if (! await sessionService.existsActive(refresh, fingerprint)) {
-        await sessionService.clean.outdated()
-        await sessionService.remove(refresh, fingerprint)
-        throw new NoActiveSessions()
+class AuthorizationController {
+    async register(req, res) {
+        const { user, fingerprint } = req.body
+        const userId = await userService.create(user)
+        const refresh = await sessionService.create(userId, fingerprint)
+        refreshProvider.attach(refresh, res)
+        const jwt = await jwtProvider.create(userId)
+        res.status(201).json({ jwt })
     }
-    return sessionService.update(refresh)
+
+    async login(req, res) {
+        const { user, fingerprint } = req.body
+        const userId = await userService.check(user)
+        await sessionService.clean.fingerprint(userId, fingerprint)
+        const refresh = await sessionService.create(userId, fingerprint)
+        refreshProvider.attach(refresh, res)
+        const jwt = await jwtProvider.create(userId)
+        res.status(200).json({ jwt })
+    }
+
+    async refresh(req, res) {
+        const refreshCookie = refreshProvider.extract(req)
+        const { fingerprint } = req.body
+        const { refresh, userId } = await sessionService.refresh(refreshCookie, fingerprint)
+        refreshProvider.attach(refresh, res)
+        const jwt = await jwtProvider.create(userId)
+        res.status(200).json({ jwt })
+    }
+
+    async logout(req, res) {
+        const refreshCookie = refreshProvider.extract(req)
+        await sessionService.remove(refreshCookie)
+        refreshProvider.erase(res)
+        res.sendStatus(204)
+    }
 }
 
-async function logout(refresh) {
-    await sessionService.remove(refresh)
-}
 
-
-module.exports = { register, login, refresh, logout }
+module.exports = new AuthorizationController()

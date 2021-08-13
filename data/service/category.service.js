@@ -1,51 +1,43 @@
 const User = require('../model/User.model')
 const Category = require('../model/Category.model')
-const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
 
 
 class CategoryService {
-    async getByUser(userId) {
+    async getByUserId(userId) {
         return (await User
-                .findById(userId)
-                .select('categories')
-                .populate('categories')
+            .findById(userId)
+            .select('categories')
+            .populate('categories')
         ).categories
     }
 
+    async existsByIdAndUserId(categoryId, userId) {
+        return await User.exists({ _id: userId, categories: categoryId })
+    }
+
     async create(userId, category) {
-        const { name } = category
-        const createdCategory = await Category.create({ name })
+        const createdCategory = await Category.create(category)
+        await User.updateOne(
+            { _id: userId },
+            { $push: { categories: createdCategory } }
+        )
         return createdCategory._id
     }
 
-    async changeName(categoryId, name) {
+    async update(categoryId, category) {
         await Category.updateOne(
-
+            { _id: categoryId },
+            category,
+            { runValidators: true }
         )
-
-        this.validator.email(email)
-        if (await User.exists({ email }))
-            throw new EmailAlreadyExists(email)
-        await User.findByIdAndUpdate(
-            { _id: userId },
-            { email },
-            { runValidators: true })
     }
 
-    async changePsw(userId, psw) {
-        this.validator.psw(psw)
-        await User.findByIdAndUpdate(
-            { _id: userId },
-            { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) },
-            { runValidators: true })
-    }
-
-    async changeInfo(userId, info) {
-        const { name, surname, patronymic, birthdate } = info
-        await User.findByIdAndUpdate(
-            { _id: userId },
-            { name, surname, patronymic, birthdate },
-            { runValidators: true })
+    async remove(categoryId) {
+        await Category.deleteOne({ _id: categoryId })
+        await User.updateOne(
+            { categories: categoryId },
+            { $pull: { categories: categoryId } }
+        )
     }
 }
 

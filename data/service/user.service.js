@@ -1,88 +1,46 @@
 const User = require('../model/User.model')
 const Category = require('../model/Category.model')
-const bcrypt = require("bcrypt");
-const validator = require('validator').default
-const { KEY_LENGTH } = require("../../middleware/security/config");
-const { WrongPsw, EmailNotExists, EmailAlreadyExists, InvalidEmail, InvalidPsw } = require("../../util/http-error")
-
-
-class Validator {
-    static pswRegExp = '^(?=.*[0-9])(?=.*[a-zA-ZА-Яа-я])(?=.*\\W*).{8,}$'
-
-    psw(psw) {
-        if (!validator.matches(psw, Validator.pswRegExp))
-            throw new InvalidPsw(psw)
-    }
-
-    email(email) {
-        if (!validator.isEmail(email))
-            throw new InvalidEmail(email)
-    }
-}
+const hashProvider = require('../../security/provider/hash.provider')
+const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
 
 
 class UserService {
-    validator = new Validator()
+    async getById(userId) {
+        return User.findById(userId).lean()
+    }
 
     async create(user) {
-        const {email, psw, name, surname, patronymic, birthdate} = user
-        this.validator.email(email)
-        this.validator.psw(psw)
+        const { email, psw } = user
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
-        const createdUser = await User.create({
-            psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT),
-            email, name, surname, patronymic, birthdate,
-            role: 'BASIC'
-        })
-        delete createdUser.psw
-        delete createdUser.sessions
-        return createdUser // TODO: return id
+        user.psw = await hashProvider.create(psw)
+        const createdUser = await User.create(user)
+        return createdUser._id
     }
 
-    async checkAndGet(user) {
+    async check(user) {
         const { email, psw } = user
-        this.validator.email(email)
-        this.validator.psw(psw)
-        const foundUser = await User.findOne({ email }).select('+psw').lean()
+        const foundUser = await User.findOne({ email }).select('psw').lean()
         if (!foundUser)
             throw new EmailNotExists(email)
-        if (!bcrypt.compareSync(psw, foundUser.psw))
+        if (!await hashProvider.check(psw, foundUser.psw))
             throw new WrongPsw(psw)
-        delete foundUser.psw
-        return foundUser
+        return foundUser._id
     }
 
-    async changeEmail(userId, email) {
-        this.validator.email(email)
-        if (await User.exists({ email }))
+    async update(userId, user) {
+        const { email, psw } = user
+        if (email && await User.exists({ email }))
             throw new EmailAlreadyExists(email)
-        await User.updateOne(
-            { _id: userId },
-            { email },
-            { runValidators: true})
-    }
-
-    async changePsw(userId, psw) {
-        this.validator.psw(psw)
-        await User.updateOne(
-            { _id: userId },
-            { psw: bcrypt.hashSync(psw, KEY_LENGTH.SALT) },
-            { runValidators: true})
-    }
-
-    async changeInfo(userId, info) {
-        const {name, surname, patronymic, birthdate} = info
-        await User.updateOne(
-            { _id: userId },
-            { name, surname, patronymic, birthdate },
-            { runValidators: true})
+        if (psw)
+            user.psw = await hashProvider.create(psw)
+        await User.updateOne({ _id: userId }, user, { runValidators: true })
     }
 
     async remove(userId) {
-        const deletedUser = await User.findByIdAndDelete(userId).select('categories')
-        if (deletedUser)
-            await Category.deleteMany({ _id: { $in: deletedUser.categories } })
+        const user = await User.findByIdAndDelete(userId).select('categories')
+        if (user)
+            await Category.deleteMany({ _id: { $in: user.categories } })
     }
 }
 
