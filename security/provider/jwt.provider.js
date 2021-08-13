@@ -1,7 +1,5 @@
 const jsonwebtoken = require('jsonwebtoken')
 const { JwtError } = require("../../util/http-error");
-const { nanoid } = require('nanoid')
-const { KEY_LENGTH, EXPIRE_PERIOD } = require('../config')
 const env = require('../../environment')
 
 

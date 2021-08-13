@@ -22,7 +22,7 @@ function createRuntimeError(e) {
     } else if (e.name === 'ValidationError') {
         error.code = 422
     } else {
-        error.code = 500
+        error.code = 500 // TODO: Add logger
     }
     error.name = e.name
     error.msg = e.message
