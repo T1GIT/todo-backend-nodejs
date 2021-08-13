@@ -32,7 +32,8 @@ module.exports = new mongoose.Schema({
         type: String,
         required: true,
         enum: ['ADMIN', 'BASIC'],
-        default: 'BASIC'
+        default: 'BASIC',
+        select: false
     },
     sessions: {
         type: [SessionSchema],

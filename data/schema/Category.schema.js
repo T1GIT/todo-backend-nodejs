@@ -3,10 +3,7 @@ const TaskSchema = require('../schema/Task.schema')
 
 
 module.exports = new mongoose.Schema({
-    name: {
-        type: String,
-        required: true,
-    },
+    name: String,
     tasks: {
         type: [TaskSchema],
         select: false

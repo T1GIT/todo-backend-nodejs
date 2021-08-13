@@ -1,7 +1,7 @@
 const express = require('express')
-const controller = require('../../controller/authorization.controller')
+const authorizationController = require('../../controller/authorization.controller')
 const errorHandlerFilter = require('../../../middleware/filter/error-handler.filter')
-const validator = require('../../validator/authorization.validator')
+const authorizationValidator = require('../../validator/authorization.validator')
 
 
 const router = express.Router()
@@ -9,22 +9,23 @@ const router = express.Router()
 
 router
     .post('/login',
-        validator.login,
+        authorizationValidator.login,
         errorHandlerFilter(
-            controller.login))
-    .route('/')
+            authorizationController.login))
+
+router.route('/')
     .post(
-        validator.register,
+        authorizationValidator.register,
         errorHandlerFilter(
-            controller.register))
+            authorizationController.register))
     .put(
-        validator.refresh,
+        authorizationValidator.refresh,
         errorHandlerFilter(
-            controller.refresh))
+            authorizationController.refresh))
     .delete(
-        validator.logout,
+        authorizationValidator.logout,
         errorHandlerFilter(
-            controller.logout))
+            authorizationController.logout))
 
 
 module.exports = router

@@ -7,6 +7,13 @@ const { SessionError } = require("../../util/http-error");
 
 
 class SessionCleaner {
+    async fingerprint(userId, fingerprint) {
+        await User.updateMany(
+            { _id: userId },
+            { $pull: { sessions: { fingerprint } } }
+        )
+    }
+
     async overflow(userId) {
         const sessions = (await User.findById(userId).select('sessions')).sessions
         if (sessions.length > config.MAX_SESSIONS) {

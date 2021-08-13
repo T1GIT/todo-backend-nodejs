@@ -9,42 +9,32 @@ class UserService {
         return User.findById(userId).lean()
     }
 
-    async create({ email, psw, name, surname, patronymic, birthdate }) {
-        const user = await User.create({
-            psw: await hashProvider.create(psw),
-            email, name, surname, patronymic, birthdate
-        })
-        return user._id
-    }
-
-    async check({email, psw}) {
-        const user = await User.findOne({ email }).select('psw').lean()
-        if (!user)
-            throw new EmailNotExists(email)
-        if (!await hashProvider.check(psw, user.psw))
-            throw new WrongPsw(psw)
-        return user._id
-    }
-
-    async changeEmail(userId, email) {
+    async create(user) {
+        const { email, psw } = user
         if (await User.exists({ email }))
             throw new EmailAlreadyExists(email)
-        await User.updateOne(
-            { _id: userId },
-            { email });
+        user.psw = await hashProvider.create(psw)
+        const createdUser = await User.create(user)
+        return createdUser._id
     }
 
-    async changePsw(userId, psw) {
-        await User.updateOne(
-            { _id: userId },
-            { psw: await hashProvider.create(psw) })
+    async check(user) {
+        const { email, psw } = user
+        const foundUser = await User.findOne({ email }).select('psw').lean()
+        if (!foundUser)
+            throw new EmailNotExists(email)
+        if (!await hashProvider.check(psw, foundUser.psw))
+            throw new WrongPsw(psw)
+        return foundUser._id
     }
 
-    async changeInfo(userId, { name, surname, patronymic, birthdate }) {
-        await User.updateOne(
-            { _id: userId },
-            { name, surname, patronymic, birthdate },
-            { runValidators: true })
+    async update(userId, user) {
+        const { email, psw } = user
+        if (email && await User.exists({ email }))
+            throw new EmailAlreadyExists(email)
+        if (psw)
+            user.psw = await hashProvider.create(psw)
+        await User.updateOne({ _id: userId }, user, { runValidators: true })
     }
 
     async remove(userId) {

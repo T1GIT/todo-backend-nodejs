@@ -1,20 +1,22 @@
 const User = require('../model/User.model')
 const Category = require('../model/Category.model')
-const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/http-error")
 
 
 class CategoryService {
-    async getByUser(userId) {
+    async getByUserId(userId) {
         return (await User
-                .findById(userId)
-                .select('categories')
-                .populate('categories')
+            .findById(userId)
+            .select('categories')
+            .populate('categories')
         ).categories
     }
 
+    async existsByIdAndUserId(categoryId, userId) {
+        return await User.exists({ _id: userId, categories: categoryId })
+    }
+
     async create(userId, category) {
-        const { name } = category
-        const createdCategory = await Category.create({ name })
+        const createdCategory = await Category.create(category)
         await User.updateOne(
             { _id: userId },
             { $push: { categories: createdCategory } }
@@ -23,10 +25,9 @@ class CategoryService {
     }
 
     async update(categoryId, category) {
-        const { name } = category
         await Category.updateOne(
             { _id: categoryId },
-            { name },
+            category,
             { runValidators: true }
         )
     }
@@ -34,8 +35,8 @@ class CategoryService {
     async remove(categoryId) {
         await Category.deleteOne({ _id: categoryId })
         await User.updateOne(
-            { 'categories._id': categoryId },
-            { $pull: { categories: { _id: categoryId } } }
+            { categories: categoryId },
+            { $pull: { categories: categoryId } }
         )
     }
 }

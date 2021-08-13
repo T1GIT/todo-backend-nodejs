@@ -5,11 +5,11 @@ module.exports = async (req, res, next) => {
     try {
         req.authId = await jwtProvider.extract(req)
         next()
-    } catch ({ name, message }) {
+    } catch (e) {
         next({
             code: 401,
-            name,
-            msg: message
+            name: e.name,
+            msg: e.message
         })
     }
 }
