@@ -1,10 +1,10 @@
-const { body, param } = require('express-validator');
+const { body, param, query } = require('express-validator');
 
 
 const validators = {
     body: [
-        body('title').optional().isLength({max: 100}),
-        body('description').optional().isLength({max: 1000}),
+        body('title').optional().isLength({ max: 100 }),
+        body('description').optional().isLength({ max: 1000 }),
         body('completed').optional().isBoolean()
     ]
 }
@@ -12,6 +12,10 @@ const validators = {
 class TaskValidator {
     path = [
         param('categoryId').exists().isMongoId()
+    ]
+
+    getAll = [
+        query(['limit', 'offset']).optional().isInt()
     ]
 
     create = [

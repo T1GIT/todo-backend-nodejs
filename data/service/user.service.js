@@ -5,8 +5,16 @@ const { WrongPsw, EmailNotExists, EmailAlreadyExists } = require("../../util/htt
 
 
 class UserService {
+    async existsById(userId) {
+        return await User.exists({ _id: userId })
+    }
+
     async getById(userId) {
         return User.findById(userId).lean()
+    }
+
+    async checkAdminRights(userId) {
+        return await User.exists({_id: userId, role: 'ADMIN'})
     }
 
     async create(user) {

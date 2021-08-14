@@ -2,10 +2,7 @@ const categoryService = require('../../data/service/category.service')
 const _ = require('lodash')
 
 
-
-const fields = ['name']
-
-class CategoryController {
+class Check {
     async exists(req, res, next) {
         const { authId } = req
         const { categoryId } = req.params
@@ -15,13 +12,32 @@ class CategoryController {
                 name: 'NotFound',
                 msg: `category with id ${ categoryId } not found`
             })
-        next()
+        else {
+            next()
+        }
+    }
+}
+
+const fields = ['name']
+
+class CategoryController {
+    check = new Check()
+
+    async getOne(req, res) {
+        const { categoryId } = req.params
+        const category = await categoryService.getById(categoryId)
+        res.status(200).json(category)
     }
 
     async getAll(req, res) {
         const { authId } = req
+        const { offset=0, limit=Infinity } = req.query
         const categories = await categoryService.getByUserId(authId)
-        res.status(200).json(categories)
+        res.status(200).json({
+            total: categories.length,
+            offset,
+            categories: categories.splice(offset, limit)
+        })
     }
 
     async create(req, res) {

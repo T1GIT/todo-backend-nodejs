@@ -1,14 +1,17 @@
-const { body, param } = require('express-validator');
-const categoryService = require('../../data/service/category.service')
+const { body, param, query } = require('express-validator');
 
 
 const validators = {
-    name: body('name').optional().isLength({max: 100})
+    name: body('name').optional().isLength({ max: 100 })
 }
 
 class CategoryValidator {
     path = [
         param('categoryId').exists().isMongoId()
+    ]
+
+    getAll = [
+        query(['limit', 'offset']).optional().isInt()
     ]
 
     create = [

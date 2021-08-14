@@ -4,7 +4,7 @@ module.exports = {
         SALT: 12
     },
     EXPIRE_PERIOD: {
-        JWT: 10, // minutes
+        JWT: 24 * 60, // minutes PROD: 20
         REFRESH: 60 // days
     }
 }

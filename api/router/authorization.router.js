@@ -1,7 +1,7 @@
 const express = require('express')
-const authorizationController = require('../../controller/authorization.controller')
-const errorHandlerFilter = require('../../../middleware/filter/error-handler.filter')
-const authorizationValidator = require('../../validator/authorization.validator')
+const authorizationController = require('../controller/authorization.controller')
+const errorHandlerFilter = require('../../middleware/filter/error-handler.filter')
+const authorizationValidator = require('../validator/authorization.validator')
 
 
 const router = express.Router()

@@ -2,6 +2,7 @@ const env = require("../../environment");
 const JsonWebTokenError = require("jsonwebtoken/lib/JsonWebTokenError");
 const { HttpError } = require("../../util/http-error");
 const { validationResult } = require('express-validator')
+const logger = require('../../util/logger')
 
 
 function createValidationError(errors) {
@@ -22,12 +23,13 @@ function createRuntimeError(e) {
     } else if (e.name === 'ValidationError') {
         error.code = 422
     } else {
-        error.code = 500 // TODO: Add logger
+        logger.error(e.stack.split('\n'))
+        error.code = 500
     }
     error.name = e.name
     error.msg = e.message
     if (env.NODE_ENV !== 'production')
-        error.trace = e.stack
+        error.trace = e.stack.split('\n')
     return error
 }
 

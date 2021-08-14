@@ -3,12 +3,19 @@ const Category = require('../model/Category.model')
 
 
 class CategoryService {
+    async getById(categoryId) {
+        return Category
+            .findById(categoryId)
+            .lean()
+    }
+
     async getByUserId(userId) {
-        return (await User
+        const user = await User
             .findById(userId)
             .select('categories')
             .populate('categories')
-        ).categories
+            .lean()
+        return user.categories
     }
 
     async existsByIdAndUserId(categoryId, userId) {
