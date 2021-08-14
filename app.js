@@ -1,33 +1,34 @@
 const express = require('express')
-const cookieParser = require('cookie-parser')
-const database = require('./database')
-const { corsConfig, errorHandler } = require('./middleware')
-const postsRoute = require('./routes/users')
+const manager = require('./data/manager/cloud.manager')
+const bodyParser = require('./middleware/plugins/body-parser.plugin')
+const corsConfig = require('./middleware/plugins/cors.plugin')
+const cookieParser = require('./middleware/plugins/cookie-parser.plugin')
+const errorHandler = require('./middleware/plugins/error-handler.plugin')
+const router = require('./api/router')
 const env = require('./environment')
+
 
 const app = express()
 
-// Middleware
-app.use(
-    cookieParser(),
-    express.json(),
-    corsConfig,
-    errorHandler
-)
+// Plugins
+app.use(cookieParser, bodyParser, corsConfig)
 
 // Routes
-app.use('/posts', postsRoute)
+app.use(`/api/${ env.VERSION }/`, router)
+
+// Error handler
+app.use(errorHandler)
 
 // Run
 async function start() {
     try {
-        await database.connect()
-        console.log(`Database has been connected on address ${ database.config.url }`)
+        await manager.connect()
+        console.log('Database is connected')
         await app.listen(env.PORT, env.HOST)
-        console.log(`Server has been started on address http://${ env.HOST }:${env.PORT}`)
+        console.log(`Server is listening on address http://${ env.HOST }:${ env.PORT }`)
     } catch (e) {
         console.error(e)
     }
 }
 
-start().then()
+start().then(() => console.log('App has been started'))
