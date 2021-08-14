@@ -5,7 +5,7 @@ const _ = require('lodash')
 const fields = ['email', 'psw', 'name', 'surname', 'patronymic', 'birthdate']
 
 class UserController {
-    async get(req, res) {
+    async getOne(req, res) {
         const { authId } = req
         const user = await userService.getById(authId)
         res.status(200).json(user)

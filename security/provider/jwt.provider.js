@@ -1,5 +1,6 @@
 const jsonwebtoken = require('jsonwebtoken')
 const { JwtError } = require("../../util/http-error");
+const { EXPIRE_PERIOD } = require('../config')
 const env = require('../../environment')
 
 

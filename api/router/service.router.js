@@ -1,6 +1,6 @@
 const express = require('express')
-const errorHandlerFilter = require('../../../middleware/filter/error-handler.filter')
-const env = require('../../../environment')
+const errorHandlerFilter = require('../../middleware/filter/error-handler.filter')
+const env = require('../../environment')
 
 
 const router = express.Router()

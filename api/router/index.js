@@ -1,17 +1,26 @@
 const express = require('express')
-const authorizationRouter = require('./router/authorization.router')
-const userRouter = require('./router/user.router')
-const todoRouter = require('./router/todo')
-const serviceRouter = require('./router/service.router')
+const authorizationRouter = require('./authorization.router')
+const userRouter = require('./user.router')
+const adminRouter = require('./admin.router')
+const categoryRouter = require('./category.router')
+const taskRouter = require('./task.router')
+const serviceRouter = require('./service.router')
 const authentication = require('../../middleware/plugins/authentication.plugin')
 
 
 const router = express.Router()
 
-router.use('/', serviceRouter)
-router.use('/authorization', authorizationRouter)
-router.use('/user', authentication, userRouter)
-router.use('/todo', authentication, todoRouter)
+router
+    .use('/',
+        serviceRouter)
+    .use('/authorization',
+        authorizationRouter)
+    .use('/admin',
+        authentication, adminRouter)
+    .use('/user',
+        authentication, userRouter)
+    .use('/todo/categories',
+        authentication, categoryRouter, taskRouter)
 
 
 module.exports = router

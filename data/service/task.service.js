@@ -2,11 +2,20 @@ const Category = require('../model/Category.model')
 
 
 class TaskService {
+    async getById(taskId) {
+        const category = await Category
+            .findOne({ 'tasks._id': taskId })
+            .select({ tasks: { $elemMatch: { _id: taskId } } })
+            .lean()
+        return category.tasks[0]
+    }
+
     async getByCategoryId(categoryId) {
-        return (await Category
+        const category = await Category
                 .findById(categoryId)
                 .select('tasks')
-        ).tasks
+                .lean()
+        return category.tasks
     }
 
     async existsByIdAndCategoryId(taskId, categoryId) {
@@ -14,12 +23,13 @@ class TaskService {
     }
 
     async create(categoryId, task) {
-        const tasks = (await Category.findOneAndUpdate(
+        const category = await Category.findOneAndUpdate(
             { _id: categoryId },
             { $push: { tasks: task } },
-            { runValidators: true, new: true }
-        ).select('tasks')).tasks
-        return tasks[tasks.length - 1]._id
+            { runValidators: true, new: true })
+            .select('tasks')
+            .lean()
+        return category.tasks[-1]._id
     }
 
     async update(taskId, task) {

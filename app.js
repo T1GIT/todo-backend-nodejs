@@ -31,4 +31,6 @@ async function start() {
     }
 }
 
+// TODO: passport.js
+
 start().then(() => console.log('App has been started'))

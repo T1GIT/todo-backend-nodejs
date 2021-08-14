@@ -58,6 +58,7 @@ class SessionService {
         const user = await User
             .findOne({ 'sessions.refresh': refresh })
             .select({ sessions: { $elemMatch: { refresh } } })
+            .lean()
         if (!user)
             throw new SessionError("Can't find session with refresh " + refresh)
         const session = user.sessions[0]
@@ -75,7 +76,9 @@ class SessionService {
                     'sessions.$.expires': date.setDate(date.getDate() + EXPIRE_PERIOD.REFRESH)
                 }
             },
-            { runValidators: true }).select('_id').lean()
+            { runValidators: true })
+            .select('_id')
+            .lean()
         return {
             refresh: newRefresh,
             userId: updatedUser._id
@@ -93,6 +96,28 @@ class SessionService {
                             { fingerprint }
                         ]
                     }
+                }
+            }
+        )
+    }
+
+    async removeAll() {
+        await User.updateMany(
+            { },
+            {
+                $set: {
+                    sessions: []
+                }
+            }
+        )
+    }
+
+    async removeByUserId(userId) {
+        await User.updateOne(
+            { _id: userId },
+            {
+                $set: {
+                    sessions: []
                 }
             }
         )
